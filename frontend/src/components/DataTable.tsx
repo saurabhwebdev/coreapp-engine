@@ -85,8 +85,10 @@ export default function DataTable<T extends Record<string, any>>({
           current: page,
           pageSize,
           total: filtered.length,
-          onChange: setPage,
+          onChange: (p, ps) => { setPage(p); if (ps !== pageSize) setPage(1); },
           size: 'small',
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
           showTotal: (total) => (
             <span style={{ fontSize: 12, color: 'var(--ce-text-muted)' }}>
               {total} record{total !== 1 ? 's' : ''}
