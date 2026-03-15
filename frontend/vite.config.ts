@@ -22,6 +22,16 @@ export default defineConfig({
         secure: false,
         ws: true,
       },
+      '/health-status': {
+        target: 'https://localhost:44305',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/.well-known': {
+        target: 'https://localhost:44305',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

@@ -30,6 +30,15 @@ public static class HealthChecksBuilderExtensions
             healthCheckUrl = "/health-status";
         }
 
+        // Ignore SSL cert errors for health UI collector (dev self-signed cert)
+        services.ConfigureHttpClientDefaults(builder =>
+        {
+            builder.ConfigurePrimaryHttpMessageHandler(() => new System.Net.Http.HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = System.Net.Http.HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
+        });
+
         var healthChecksUiBuilder = services.AddHealthChecksUI(settings =>
         {
             settings.AddHealthCheckEndpoint("CoreApp Health Status", configuration["App:HealthUiCheckUrl"] ?? healthCheckUrl);
