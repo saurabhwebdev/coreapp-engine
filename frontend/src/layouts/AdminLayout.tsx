@@ -25,9 +25,11 @@ import {
   MoonOutlined,
   RightOutlined,
   SwapOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons';
 import { getUnreadCount } from '../services/notification';
 import { startConnection, onNotificationReceived } from '../services/signalr';
+import { getLanguages, getCurrentCulture, switchLanguage, type AppLanguage } from '../utils/localization';
 import api from '../services/api';
 import { getAvatarConfig, generateAvatarDataUri } from '../utils/avatar';
 import { getBranding } from '../utils/branding';
@@ -90,6 +92,8 @@ export default function AdminLayout() {
   const [branding, setBranding] = useState(getBranding);
   const [colorTheme, setColorTheme] = useState(getColorTheme);
   const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
+  const [languages, setLanguages] = useState<AppLanguage[]>([]);
+  const [currentLang, setCurrentLang] = useState(getCurrentCulture());
   const [currentTenantId, setCurrentTenantId] = useState<string | null>(() => localStorage.getItem('__tenant'));
   const auth = useAuth();
   const navigate = useNavigate();
@@ -197,6 +201,7 @@ export default function AdminLayout() {
     loadFeatures();
     loadUnreadCount();
     loadTenants();
+    getLanguages().then((langs) => { setLanguages(langs); setCurrentLang(getCurrentCulture()); });
     startConnection();
     const unsub = onNotificationReceived((data: any) => {
       setUnreadCount((c) => c + 1);
@@ -462,6 +467,41 @@ export default function AdminLayout() {
                   {currentTenantId
                     ? tenants.find((t) => t.id === currentTenantId)?.name || 'Tenant'
                     : 'Host'}
+                </button>
+              </Dropdown>
+            )}
+
+            {/* Language switcher */}
+            {languages.length > 1 && (
+              <Dropdown
+                menu={{
+                  items: languages.map((l) => ({
+                    key: l.cultureName,
+                    label: (
+                      <span style={{ fontWeight: currentLang === l.cultureName ? 700 : 400 }}>
+                        {l.displayName}
+                      </span>
+                    ),
+                    icon: currentLang === l.cultureName ? <span style={{ color: 'var(--ce-success)', fontSize: 8 }}>●</span> : null,
+                  })),
+                  onClick: ({ key }) => { if (key !== currentLang) switchLanguage(key); },
+                }}
+                placement="bottomRight"
+                trigger={['click']}
+              >
+                <button
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '5px 10px', border: '1px solid var(--ce-border)',
+                    borderRadius: 8, background: 'var(--ce-bg-card)', cursor: 'pointer',
+                    fontSize: 12, fontWeight: 500, color: 'var(--ce-text-secondary)',
+                    fontFamily: 'inherit', transition: 'all 0.12s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ce-accent)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ce-border)'; }}
+                >
+                  <GlobalOutlined style={{ fontSize: 13 }} />
+                  {currentLang.toUpperCase()}
                 </button>
               </Dropdown>
             )}
