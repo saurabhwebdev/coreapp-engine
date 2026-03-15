@@ -22,12 +22,6 @@ api.interceptors.request.use((config) => {
     config.headers['__tenant'] = tenantId;
   }
 
-  // Localization — ABP uses Accept-Language or culture cookie
-  const lang = localStorage.getItem('ce-language');
-  if (lang) {
-    config.headers['Accept-Language'] = lang;
-  }
-
   return config;
 });
 

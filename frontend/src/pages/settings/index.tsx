@@ -27,7 +27,6 @@ import {
   MessageOutlined,
   FormOutlined,
   BarChartOutlined,
-  TranslationOutlined,
   BgColorsOutlined,
   EditOutlined,
   UploadOutlined,
@@ -49,7 +48,6 @@ import {
   type FeatureDto,
 } from '../../services/features';
 import EmptyState from '../../components/EmptyState';
-import { getLanguages, getCurrentCulture, switchLanguage, type AppLanguage } from '../../utils/localization';
 import { colorThemes, getColorTheme, saveColorTheme, saveCustomColor, getCustomColor, getLikedColors, saveLikedColor, removeLikedColor, type LikedColor } from '../../utils/theme';
 import { getBranding, saveBranding, resetBranding } from '../../utils/branding';
 
@@ -933,54 +931,6 @@ function ModulesTab() {
   );
 }
 
-/* ─── Language Tab ─── */
-function LanguageTab() {
-  const [languages, setLanguages] = useState<AppLanguage[]>([]);
-  const [current, setCurrent] = useState(getCurrentCulture());
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getLanguages().then((langs) => {
-      setLanguages(langs);
-      setCurrent(getCurrentCulture());
-    }).finally(() => setLoading(false));
-  }, []);
-
-  return (
-    <Spin spinning={loading}>
-      <div>
-        <div className="ce-settings-label">Display Language</div>
-        <div className="ce-settings-group">
-          <div className="ce-settings-row">
-            <div>
-              <span className="ce-settings-row-label">Language</span>
-              <div className="ce-settings-row-desc">
-                All UI labels and API responses will use the selected language
-              </div>
-            </div>
-            <div className="ce-settings-row-control">
-              <Select
-                showSearch
-                style={{ width: 280 }}
-                value={current}
-                optionFilterProp="label"
-                onChange={(val) => switchLanguage(val)}
-                options={languages.map((l) => ({
-                  value: l.cultureName,
-                  label: `${l.displayName} (${l.cultureName})`,
-                }))}
-              />
-            </div>
-          </div>
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', marginTop: 8 }}>
-          Changing the language will reload the application. ABP localizes all labels, validation messages, and permission names automatically.
-        </div>
-      </div>
-    </Spin>
-  );
-}
-
 /* ─── Settings Page ─── */
 export default function SettingsPage() {
   return (
@@ -1014,11 +964,6 @@ export default function SettingsPage() {
             key: 'timezone',
             label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ClockCircleOutlined /> Timezone</span>,
             children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><TimezoneTab /></div>,
-          },
-          {
-            key: 'language',
-            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><TranslationOutlined /> Language</span>,
-            children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><LanguageTab /></div>,
           },
           {
             key: 'modules',
