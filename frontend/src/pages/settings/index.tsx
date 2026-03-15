@@ -50,13 +50,16 @@ import {
   type FeatureDto,
 } from '../../services/features';
 import EmptyState from '../../components/EmptyState';
-import { colorThemes, getColorTheme, saveColorTheme, saveCustomColor, getCustomColor } from '../../utils/theme';
+import { colorThemes, getColorTheme, saveColorTheme, saveCustomColor, getCustomColor, getLikedColors, saveLikedColor, removeLikedColor, type LikedColor } from '../../utils/theme';
 import { getBranding, saveBranding, resetBranding } from '../../utils/branding';
 
 /* ─── Appearance Tab ─── */
 function AppearanceTab() {
   const [activeTheme, setActiveTheme] = useState(getColorTheme().key);
   const [customColor, setCustomColor] = useState(getCustomColor() || '#6366F1');
+  const [likedColors, setLikedColors] = useState<LikedColor[]>(getLikedColors);
+  const [likeModalOpen, setLikeModalOpen] = useState(false);
+  const [likeName, setLikeName] = useState('');
 
   const handleSelect = (key: string) => {
     setActiveTheme(key);
@@ -69,8 +72,85 @@ function AppearanceTab() {
     saveCustomColor(hex);
   };
 
+  const handleOpenLikeModal = () => {
+    const currentHex = getColorTheme().accent;
+    setLikeName(currentHex);
+    setLikeModalOpen(true);
+  };
+
+  const handleConfirmLike = () => {
+    const currentHex = getColorTheme().accent;
+    setLikedColors(saveLikedColor(currentHex, likeName.trim() || currentHex));
+    setLikeModalOpen(false);
+    message.success('Color saved to Liked');
+  };
+
+  const handleRemoveLiked = (hex: string) => {
+    setLikedColors(removeLikedColor(hex));
+  };
+
+  const handleApplyLiked = (hex: string) => {
+    setCustomColor(hex);
+    setActiveTheme('custom');
+    saveCustomColor(hex);
+  };
+
   return (
     <div>
+      {/* Liked Colors */}
+      {likedColors.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 10 }}>
+            Liked Colors
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {likedColors.map((c) => (
+              <div
+                key={c.hex}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '6px 10px 6px 6px',
+                  borderRadius: 8,
+                  border: '1px solid var(--ce-border-light)',
+                  background: 'var(--ce-bg-card)',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.12s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = c.hex; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ce-border-light)'; }}
+              >
+                <div
+                  onClick={() => handleApplyLiked(c.hex)}
+                  style={{ width: 22, height: 22, borderRadius: 6, background: c.hex, flexShrink: 0 }}
+                  title={`Apply ${c.name}`}
+                />
+                <div onClick={() => handleApplyLiked(c.hex)} style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ce-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {c.name !== c.hex ? c.name : ''}
+                  </div>
+                  <div style={{ fontSize: 10, fontFamily: 'var(--ce-mono)', color: 'var(--ce-text-muted)' }}>
+                    {c.hex}
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleRemoveLiked(c.hex); }}
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer',
+                    fontSize: 12, color: 'var(--ce-text-muted)', padding: '0 2px',
+                    lineHeight: 1, opacity: 0.5,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--ce-danger)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.color = 'var(--ce-text-muted)'; }}
+                  title="Remove"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Presets — full-width grid */}
       <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 12 }}>
         Theme Presets
@@ -161,13 +241,48 @@ function AppearanceTab() {
             Use the color picker or enter a hex code
           </div>
         </div>
-        {activeTheme === 'custom' && (
-          <div style={{
-            width: 48, height: 24, borderRadius: 12,
-            background: customColor, opacity: 0.8,
-          }} />
-        )}
+        <button
+          onClick={handleOpenLikeModal}
+          style={{
+            border: '1px solid var(--ce-border)', borderRadius: 6,
+            background: 'var(--ce-bg-card)', cursor: 'pointer',
+            fontSize: 11, fontWeight: 500, color: 'var(--ce-text-secondary)',
+            padding: '4px 10px', fontFamily: 'inherit', transition: 'all 0.12s',
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ce-accent)'; e.currentTarget.style.color = 'var(--ce-accent)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ce-border)'; e.currentTarget.style.color = 'var(--ce-text-secondary)'; }}
+        >
+          ♥ Save
+        </button>
       </div>
+
+      {/* Save to Liked modal */}
+      <Modal
+        title="Save Color"
+        open={likeModalOpen}
+        onOk={handleConfirmLike}
+        onCancel={() => setLikeModalOpen(false)}
+        okText="Save"
+        width={360}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, marginTop: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+            background: getColorTheme().accent,
+          }} />
+          <div style={{ fontFamily: 'var(--ce-mono)', fontSize: 13, color: 'var(--ce-text-secondary)' }}>
+            {getColorTheme().accent}
+          </div>
+        </div>
+        <Input
+          value={likeName}
+          onChange={(e) => setLikeName(e.target.value)}
+          placeholder="Color name (e.g. Ocean Blue)"
+          autoFocus
+          onPressEnter={handleConfirmLike}
+        />
+      </Modal>
     </div>
   );
 }

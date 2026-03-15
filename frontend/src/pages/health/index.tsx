@@ -71,8 +71,11 @@ export default function HealthPage() {
   );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Uptime history — stores last 60 check results
-  const [uptimeHistory, setUptimeHistory] = useState<{ time: Date; status: string; duration: number }[]>(() => {
+  // Uptime history — recent granular + older aggregated hourly
+  // Strategy: keep last 2 hours per-check (~240 entries at 30s interval)
+  // Aggregate anything older into hourly buckets (avg duration, worst status)
+  // Max ~500 entries in localStorage (~200 hourly + ~240 recent)
+  const [uptimeHistory, setUptimeHistory] = useState<{ time: Date; status: string; duration: number; aggregated?: boolean }[]>(() => {
     try {
       const stored = localStorage.getItem('ce-uptime-history');
       if (stored) return JSON.parse(stored).map((h: any) => ({ ...h, time: new Date(h.time) }));
@@ -80,15 +83,56 @@ export default function HealthPage() {
     return [];
   });
 
+  const compactHistory = (entries: { time: Date; status: string; duration: number; aggregated?: boolean }[]) => {
+    const TWO_HOURS = 2 * 60 * 60 * 1000;
+    const now = Date.now();
+    const recent: typeof entries = [];
+    const old: typeof entries = [];
+
+    for (const e of entries) {
+      const t = new Date(e.time).getTime();
+      if (now - t < TWO_HOURS) {
+        recent.push(e);
+      } else if (!e.aggregated) {
+        old.push(e);
+      } else {
+        recent.push(e); // already aggregated, keep as-is
+      }
+    }
+
+    // Aggregate old entries into hourly buckets
+    const hourlyBuckets: Record<string, { times: number[]; statuses: string[]; durations: number[] }> = {};
+    for (const e of old) {
+      const d = new Date(e.time);
+      const hourKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}`;
+      if (!hourlyBuckets[hourKey]) hourlyBuckets[hourKey] = { times: [], statuses: [], durations: [] };
+      hourlyBuckets[hourKey].times.push(d.getTime());
+      hourlyBuckets[hourKey].statuses.push(e.status);
+      hourlyBuckets[hourKey].durations.push(e.duration);
+    }
+
+    const aggregated = Object.values(hourlyBuckets).map((b) => {
+      const avgDur = b.durations.reduce((a, c) => a + c, 0) / b.durations.length;
+      const worstStatus = b.statuses.includes('Unreachable') ? 'Unreachable'
+        : b.statuses.includes('Unhealthy') ? 'Unhealthy'
+        : b.statuses.includes('Degraded') ? 'Degraded' : 'Healthy';
+      return { time: new Date(Math.min(...b.times)), status: worstStatus, duration: avgDur, aggregated: true as const };
+    });
+
+    // Combine: aggregated hourly + recent granular, sort by time, cap at 500
+    return [...aggregated, ...recent.filter((r) => !r.aggregated)]
+      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+      .slice(-500);
+  };
+
   const fetchHealth = useCallback(async () => {
     try {
       const res = await getHealthStatus();
       setReport(res.data);
-      // Record uptime history
       const dur = parseDuration(res.data.totalDuration);
       const entry = { time: new Date(), status: res.data.status, duration: parseFloat(dur) || 0 };
       setUptimeHistory((prev) => {
-        const updated = [...prev, entry].slice(-60); // keep last 60
+        const updated = compactHistory([...prev, entry]);
         try { localStorage.setItem('ce-uptime-history', JSON.stringify(updated)); } catch { /* */ }
         return updated;
       });
@@ -96,7 +140,7 @@ export default function HealthPage() {
       setReport(null);
       const entry = { time: new Date(), status: 'Unreachable', duration: 0 };
       setUptimeHistory((prev) => {
-        const updated = [...prev, entry].slice(-60);
+        const updated = compactHistory([...prev, entry]);
         try { localStorage.setItem('ce-uptime-history', JSON.stringify(updated)); } catch { /* */ }
         return updated;
       });

@@ -20,6 +20,38 @@ export const colorThemes: ColorTheme[] = [
 
 const STORAGE_KEY = 'ce-color-theme';
 const CUSTOM_KEY = 'ce-custom-color';
+const LIKED_KEY = 'ce-liked-colors';
+
+// ─── Liked Colors ───
+
+export interface LikedColor {
+  hex: string;
+  name: string;
+  savedAt: string;
+}
+
+export function getLikedColors(): LikedColor[] {
+  try {
+    const stored = localStorage.getItem(LIKED_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* */ }
+  return [];
+}
+
+export function saveLikedColor(hex: string, name?: string): LikedColor[] {
+  const liked = getLikedColors();
+  // Don't duplicate
+  if (liked.some((c) => c.hex.toLowerCase() === hex.toLowerCase())) return liked;
+  const updated = [...liked, { hex, name: name || hex, savedAt: new Date().toISOString() }];
+  localStorage.setItem(LIKED_KEY, JSON.stringify(updated));
+  return updated;
+}
+
+export function removeLikedColor(hex: string): LikedColor[] {
+  const liked = getLikedColors().filter((c) => c.hex.toLowerCase() !== hex.toLowerCase());
+  localStorage.setItem(LIKED_KEY, JSON.stringify(liked));
+  return liked;
+}
 
 // Derive hover/dark variants from a single hex color
 function deriveTheme(hex: string): ColorTheme {
