@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from 'react-oidc-context';
 import { Badge, Dropdown, Space, notification as antNotification, Tooltip } from 'antd';
@@ -82,6 +82,7 @@ export default function AdminLayout() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [enabledFeatures, setEnabledFeatures] = useState<Record<string, string>>({});
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ce-theme') === 'dark');
+  const themeToggleRef = useRef<HTMLButtonElement>(null);
   const [avatarConfig, setAvatarConfig] = useState(getAvatarConfig);
   const [branding, setBranding] = useState(getBranding);
   const [colorTheme, setColorTheme] = useState(getColorTheme);
@@ -94,6 +95,52 @@ export default function AdminLayout() {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
     localStorage.setItem('ce-theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
+
+  // Circular reveal dark mode toggle
+  const toggleDarkMode = useCallback(() => {
+    const btn = themeToggleRef.current;
+    // Fallback: no View Transition API support
+    if (!document.startViewTransition || !btn) {
+      setDarkMode((d) => !d);
+      return;
+    }
+
+    // Get the button center coordinates for the circle origin
+    const rect = btn.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+
+    // Calculate the max radius needed to cover the entire viewport
+    const maxRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    // Store coordinates as CSS custom properties for the animation
+    document.documentElement.style.setProperty('--ce-reveal-x', `${x}px`);
+    document.documentElement.style.setProperty('--ce-reveal-y', `${y}px`);
+    document.documentElement.style.setProperty('--ce-reveal-r', `${maxRadius}px`);
+
+    const transition = document.startViewTransition(() => {
+      setDarkMode((d) => !d);
+    });
+
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${maxRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 500,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          pseudoElement: '::view-transition-new(root)',
+        }
+      );
+    });
+  }, []);
 
   const loadFeatures = async () => {
     try {
@@ -341,9 +388,10 @@ export default function AdminLayout() {
 
           {/* Right: Actions */}
           <Space size={12}>
-            {/* Dark mode toggle */}
+            {/* Dark mode toggle — circular reveal */}
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              ref={themeToggleRef}
+              onClick={toggleDarkMode}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 38, height: 38, borderRadius: 10,

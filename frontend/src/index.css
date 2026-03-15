@@ -101,6 +101,19 @@
   --ce-shadow-float: 0 12px 40px rgba(0,0,0,0.45);
 }
 
+/* ─── View Transition — Circular Reveal for Dark Mode ─── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
 /* ─── Base ─── */
 * { box-sizing: border-box; }
 
