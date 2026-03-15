@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Tag, Popconfirm, Spin, message, Input } from 'antd';
+import { Button, Popconfirm, Spin, Input, message, Tooltip } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -118,34 +118,50 @@ export default function WorkflowsPage() {
       wf.description?.toLowerCase().includes(filter.toLowerCase())
   );
 
+  const getNodeCount = (wf: WorkflowDefinitionDto): number | null => {
+    try {
+      if (wf.nodesJson) {
+        const nodes = JSON.parse(wf.nodesJson);
+        return Array.isArray(nodes) ? nodes.length : null;
+      }
+    } catch { /* ignore */ }
+    return null;
+  };
+
   return (
     <div>
+      {/* Toolbar — DataTable pattern: count left, search + action right */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 0', marginBottom: 16,
-        borderBottom: '1px solid var(--ce-border-light)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        marginBottom: 20,
+        flexWrap: 'wrap',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: 'var(--ce-text-muted)', fontWeight: 500 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <span style={{
+            fontSize: 12,
+            color: 'var(--ce-text-muted)',
+            fontWeight: 500,
+            fontFamily: 'var(--ce-font)',
+          }}>
             {workflows.length} workflow{workflows.length !== 1 ? 's' : ''}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <Input
+            placeholder="Search workflows..."
+            prefix={<SearchOutlined style={{ color: 'var(--ce-text-muted)', fontSize: 13 }} />}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            allowClear
+            style={{ width: 240 }}
+          />
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             New Workflow
           </Button>
         </div>
-      </div>
-
-      <div style={{ marginBottom: 20 }}>
-        <Input
-          placeholder="Search workflows..."
-          prefix={<SearchOutlined style={{ color: '#7A7D8E' }} />}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          style={{ maxWidth: 360 }}
-          allowClear
-        />
       </div>
 
       {loading ? (
@@ -153,107 +169,177 @@ export default function WorkflowsPage() {
           <Spin size="large" />
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No workflows yet" description="Create your first visual automation workflow." actionLabel="New Workflow" onAction={handleCreate} />
+        <EmptyState
+          title="No workflows yet"
+          description="Create your first automation to streamline your processes."
+          actionLabel="Create Workflow"
+          onAction={handleCreate}
+        />
       ) : (
         <div
           className="ce-stagger-2"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-            gap: 16,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
+            gap: 12,
           }}
         >
           {filtered.map((wf) => {
             const status = statusConfig[wf.status] || statusConfig[0];
+            const nodeCount = getNodeCount(wf);
+            const isActive = wf.status === 1;
+            const borderLeftColor = isActive ? '#3D8B6E' : '#7A7D8E';
+
             return (
               <div
                 key={wf.id}
                 style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #F0EDE8',
-                  borderRadius: 10,
-                  padding: 20,
-                  boxShadow: '0 1px 3px rgba(45, 49, 66, 0.04), 0 1px 2px rgba(45, 49, 66, 0.02)',
-                  transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+                  background: 'var(--ce-bg-card, #FFFFFF)',
+                  border: '1px solid var(--ce-border, #E8E5E0)',
+                  borderLeft: `2px solid ${borderLeftColor}`,
+                  borderRadius: 8,
+                  padding: 0,
                   cursor: 'pointer',
+                  transition: 'border-color 0.15s ease',
+                  fontFamily: 'var(--ce-font)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(45, 49, 66, 0.06), 0 1px 4px rgba(45, 49, 66, 0.03)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.borderColor = 'var(--ce-border-hover, #C8C5BF)';
+                  e.currentTarget.style.borderLeftColor = borderLeftColor;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(45, 49, 66, 0.04), 0 1px 2px rgba(45, 49, 66, 0.02)';
-                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.borderColor = 'var(--ce-border, #E8E5E0)';
+                  e.currentTarget.style.borderLeftColor = borderLeftColor;
                 }}
                 onClick={() => navigate(`/workflows/${wf.id}`)}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: '#2D3142', letterSpacing: -0.2, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {wf.name}
+                {/* Card body */}
+                <div style={{ padding: '16px 18px 12px' }}>
+                  {/* Top row: status dot + label | version badge */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 10,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: '50%',
+                        background: status.color,
+                        display: 'inline-block',
+                        flexShrink: 0,
+                      }} />
+                      <span style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: status.color,
+                        letterSpacing: 0.3,
+                        textTransform: 'uppercase',
+                      }}>
+                        {status.label}
+                      </span>
                     </div>
-                    <div style={{ fontSize: 13, color: '#7A7D8E', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {wf.description || 'No description'}
-                    </div>
-                  </div>
-                  <Tag
-                    style={{
-                      background: `${status.color}14`,
-                      color: status.color,
-                      border: 'none',
-                      fontWeight: 600,
+                    <span style={{
                       fontSize: 11,
-                      letterSpacing: 0.3,
-                      flexShrink: 0,
-                      marginLeft: 8,
-                    }}
-                  >
-                    {status.label}
-                  </Tag>
+                      fontWeight: 500,
+                      color: 'var(--ce-text-muted)',
+                      background: 'var(--ce-bg-inset, #F5F3EF)',
+                      padding: '2px 8px',
+                      borderRadius: 4,
+                      fontFamily: 'var(--ce-font-mono, monospace)',
+                    }}>
+                      v{wf.version}
+                    </span>
+                  </div>
+
+                  {/* Middle: name + description */}
+                  <div style={{
+                    fontWeight: 600,
+                    fontSize: 16,
+                    color: 'var(--ce-text)',
+                    letterSpacing: -0.2,
+                    marginBottom: 3,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    lineHeight: 1.3,
+                  }}>
+                    {wf.name}
+                  </div>
+                  <div style={{
+                    fontSize: 13,
+                    color: 'var(--ce-text-muted)',
+                    lineHeight: 1.4,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    marginBottom: 12,
+                  }}>
+                    {wf.description || 'No description'}
+                  </div>
+
+                  {/* Bottom row: last edited + node count */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: 12,
+                    color: 'var(--ce-text-muted)',
+                  }}>
+                    <span>
+                      Last edited{' '}
+                      {wf.lastModificationTime
+                        ? dayjs(wf.lastModificationTime).fromNow()
+                        : dayjs(wf.creationTime).fromNow()}
+                    </span>
+                    {nodeCount !== null && (
+                      <span>
+                        {nodeCount} node{nodeCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                  <span className="ce-mono" style={{ fontSize: 11 }}>
-                    v{wf.version}
-                  </span>
-                  <span style={{ fontSize: 12, color: '#A7A9B7' }}>
-                    {wf.lastModificationTime
-                      ? dayjs(wf.lastModificationTime).fromNow()
-                      : dayjs(wf.creationTime).fromNow()}
-                  </span>
-                </div>
-
+                {/* Action bar */}
                 <div
-                  style={{ display: 'flex', gap: 4, borderTop: '1px solid #F0EDE8', paddingTop: 12 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    borderTop: '1px solid var(--ce-border, #E8E5E0)',
+                    padding: '6px 10px',
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<EditOutlined />}
-                    onClick={() => navigate(`/workflows/${wf.id}`)}
-                    style={{ color: '#7A7D8E', fontSize: 12 }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<CopyOutlined />}
-                    onClick={() => handleDuplicate(wf.id)}
-                    style={{ color: '#7A7D8E', fontSize: 12 }}
-                  >
-                    Duplicate
-                  </Button>
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={wf.status === 1 ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-                    onClick={() => handleToggleActive(wf)}
-                    style={{ color: wf.status === 1 ? '#D4973B' : '#3D8B6E', fontSize: 12 }}
-                  >
-                    {wf.status === 1 ? 'Deactivate' : 'Activate'}
-                  </Button>
+                  <Tooltip title="Edit">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EditOutlined />}
+                      onClick={() => navigate(`/workflows/${wf.id}`)}
+                      style={{ color: 'var(--ce-text-muted)', fontSize: 13 }}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Duplicate">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CopyOutlined />}
+                      onClick={() => handleDuplicate(wf.id)}
+                      style={{ color: 'var(--ce-text-muted)', fontSize: 13 }}
+                    />
+                  </Tooltip>
+                  <Tooltip title={isActive ? 'Deactivate' : 'Activate'}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={isActive ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+                      onClick={() => handleToggleActive(wf)}
+                      style={{ color: isActive ? '#D4973B' : '#3D8B6E', fontSize: 13 }}
+                    />
+                  </Tooltip>
                   <div style={{ flex: 1 }} />
                   <Popconfirm
                     title="Delete this workflow?"
@@ -262,13 +348,15 @@ export default function WorkflowsPage() {
                     okText="Delete"
                     okButtonProps={{ danger: true }}
                   >
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      danger
-                      style={{ fontSize: 12 }}
-                    />
+                    <Tooltip title="Delete">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        danger
+                        style={{ fontSize: 13 }}
+                      />
+                    </Tooltip>
                   </Popconfirm>
                 </div>
               </div>

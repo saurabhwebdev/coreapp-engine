@@ -58,7 +58,7 @@ export default function AuthCallback() {
     }}>
       <div style={{
         width: 48, height: 48, borderRadius: 12,
-        background: 'linear-gradient(135deg, #C2703E 0%, #D4973B 100%)',
+        background: 'linear-gradient(135deg, var(--ce-accent, #C2703E), var(--ce-accent-hover, #B5642F))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#fff', fontWeight: 800, fontSize: 16,
         animation: 'ce-pulse 1.5s ease-in-out infinite',
