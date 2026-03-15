@@ -483,3 +483,135 @@ body {
 .ce-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .ce-page-header h2 { margin: 0; font-size: 20px; font-weight: 600; color: var(--ce-text); letter-spacing: -0.2px; }
 .ce-page-header .ce-subtitle { font-size: 12px; color: var(--ce-text-secondary); margin-top: 1px; }
+
+/* ═══════════════════════════════════════════
+   Apple-style Settings
+   ═══════════════════════════════════════════ */
+
+/* Section label — small gray text above grouped container */
+.ce-settings-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--ce-text-muted);
+  padding: 0 4px;
+  margin-bottom: 8px;
+}
+
+/* Grouped container — rounded box with rows */
+.ce-settings-group {
+  background: var(--ce-bg-card);
+  border: 1px solid var(--ce-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Row inside group */
+.ce-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ce-border-light);
+  min-height: 48px;
+  transition: background 0.08s;
+  gap: 12px;
+}
+.ce-settings-row:last-child { border-bottom: none; }
+.ce-settings-row:hover { background: var(--ce-bg-inset); }
+
+/* Row label */
+.ce-settings-row-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ce-text);
+  flex-shrink: 0;
+  min-width: 120px;
+}
+.ce-settings-row-desc {
+  font-size: 11px;
+  color: var(--ce-text-muted);
+  margin-top: 1px;
+}
+
+/* Row value/control — right side */
+.ce-settings-row-control {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 0;
+}
+.ce-settings-row-control .ant-input,
+.ce-settings-row-control .ant-select,
+.ce-settings-row-control .ant-input-affix-wrapper,
+.ce-settings-row-control .ant-input-number {
+  max-width: 320px;
+}
+
+/* Section with description */
+.ce-settings-section {
+  margin-bottom: 28px;
+}
+.ce-settings-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ce-text);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+.ce-settings-section-desc {
+  font-size: 12px;
+  color: var(--ce-text-muted);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+/* Footer actions bar */
+.ce-settings-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+/* Dark mode */
+/* Left-positioned tabs — Apple System Settings style */
+.ant-tabs-left > .ant-tabs-nav .ant-tabs-tab {
+  padding: 6px 12px !important;
+  margin: 1px 0 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--ce-text-secondary) !important;
+  transition: all 0.1s !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+.ant-tabs-left > .ant-tabs-nav .ant-tabs-tab:hover {
+  color: var(--ce-text) !important;
+  background: var(--ce-bg-inset) !important;
+}
+.ant-tabs-left > .ant-tabs-nav .ant-tabs-tab-active {
+  background: var(--ce-accent-light) !important;
+}
+.ant-tabs-left > .ant-tabs-nav .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--ce-accent) !important;
+  font-weight: 600 !important;
+}
+.ant-tabs-left > .ant-tabs-nav .ant-tabs-ink-bar {
+  display: none !important;
+}
+.ant-tabs-left > .ant-tabs-content-holder {
+  border-left: none !important;
+}
+
+[data-theme="dark"] .ce-settings-group {
+  background: var(--ce-bg-card);
+  border-color: var(--ce-border-light);
+}
+[data-theme="dark"] .ce-settings-row { border-bottom-color: var(--ce-border-light); }
+[data-theme="dark"] .ce-settings-row:hover { background: var(--ce-bg-inset); }

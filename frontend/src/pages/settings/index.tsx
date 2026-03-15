@@ -7,7 +7,6 @@ import {
   Switch,
   Select,
   Button,
-  Card,
   Modal,
   message,
   Spin,
@@ -21,7 +20,6 @@ import {
   SendOutlined,
   SaveOutlined,
   LockOutlined,
-  GlobalOutlined,
   BellOutlined,
   FileOutlined,
   DashboardOutlined,
@@ -511,72 +509,104 @@ function EmailTab() {
 
   return (
     <Spin spinning={loading}>
-      <Card>
-        <Form form={form} layout="vertical">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-            <Form.Item name="smtpHost" label="SMTP Host" rules={[{ required: true }]}>
-              <Input prefix={<GlobalOutlined style={{ color: '#A7A9B7' }} />} placeholder="smtp.example.com" />
-            </Form.Item>
-            <Form.Item name="smtpPort" label="SMTP Port" rules={[{ required: true }]}>
-              <InputNumber style={{ width: '100%' }} placeholder="587" min={1} max={65535} />
-            </Form.Item>
-            <Form.Item name="smtpUserName" label="Username">
-              <Input placeholder="user@example.com" />
-            </Form.Item>
-            <Form.Item name="smtpPassword" label="Password">
-              <Input.Password prefix={<LockOutlined style={{ color: '#A7A9B7' }} />} placeholder="Password" />
-            </Form.Item>
-            <Form.Item name="smtpDomain" label="Domain">
-              <Input placeholder="example.com" />
-            </Form.Item>
-            <div style={{ display: 'flex', gap: 32, alignItems: 'center', paddingTop: 8 }}>
-              <Form.Item name="smtpEnableSsl" label="Enable SSL" valuePropName="checked" style={{ marginBottom: 0 }}>
-                <Switch />
-              </Form.Item>
-              <Form.Item name="smtpUseDefaultCredentials" label="Default Credentials" valuePropName="checked" style={{ marginBottom: 0 }}>
-                <Switch />
+      <Form form={form} layout="vertical">
+        {/* Server */}
+        <div className="ce-settings-label">SMTP Server</div>
+        <div className="ce-settings-group">
+          <div className="ce-settings-row">
+            <span className="ce-settings-row-label">Host</span>
+            <div className="ce-settings-row-control">
+              <Form.Item name="smtpHost" noStyle rules={[{ required: true }]}>
+                <Input placeholder="smtp.example.com" />
               </Form.Item>
             </div>
-            <Form.Item name="defaultFromAddress" label="Default From Address" rules={[{ required: true, type: 'email' }]}>
-              <Input prefix={<MailOutlined style={{ color: '#A7A9B7' }} />} placeholder="noreply@example.com" />
-            </Form.Item>
-            <Form.Item name="defaultFromDisplayName" label="Default From Name">
-              <Input placeholder="My Application" />
-            </Form.Item>
           </div>
-        </Form>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-          <Button icon={<SendOutlined />} onClick={() => setTestModalOpen(true)}>
-            Send Test Email
-          </Button>
-          <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
-            Save Changes
-          </Button>
+          <div className="ce-settings-row">
+            <span className="ce-settings-row-label">Port</span>
+            <div className="ce-settings-row-control">
+              <Form.Item name="smtpPort" noStyle rules={[{ required: true }]}>
+                <InputNumber style={{ width: 120 }} placeholder="587" min={1} max={65535} />
+              </Form.Item>
+            </div>
+          </div>
+          <div className="ce-settings-row">
+            <span className="ce-settings-row-label">Domain</span>
+            <div className="ce-settings-row-control">
+              <Form.Item name="smtpDomain" noStyle>
+                <Input placeholder="example.com" />
+              </Form.Item>
+            </div>
+          </div>
+          <div className="ce-settings-row">
+            <div>
+              <span className="ce-settings-row-label">Enable SSL</span>
+              <div className="ce-settings-row-desc">Use TLS/SSL encryption</div>
+            </div>
+            <div className="ce-settings-row-control">
+              <Form.Item name="smtpEnableSsl" noStyle valuePropName="checked"><Switch /></Form.Item>
+            </div>
+          </div>
         </div>
-      </Card>
 
-      <Modal
-        title="Send Test Email"
-        open={testModalOpen}
-        onCancel={() => setTestModalOpen(false)}
-        onOk={handleSendTest}
-        confirmLoading={sendingTest}
-        okText="Send"
-      >
-        <Form form={testForm} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="senderEmailAddress" label="Sender Address" rules={[{ required: true, type: 'email' }]}>
-            <Input placeholder="noreply@example.com" />
-          </Form.Item>
-          <Form.Item name="targetEmailAddress" label="Target Address" rules={[{ required: true, type: 'email' }]}>
-            <Input placeholder="test@example.com" />
-          </Form.Item>
-          <Form.Item name="subject" label="Subject" rules={[{ required: true }]}>
-            <Input placeholder="Test email subject" />
-          </Form.Item>
-          <Form.Item name="body" label="Body" rules={[{ required: true }]}>
-            <Input.TextArea rows={3} placeholder="Test email body" />
-          </Form.Item>
+        {/* Credentials */}
+        <div className="ce-settings-label">Authentication</div>
+        <div className="ce-settings-group">
+          <div className="ce-settings-row">
+            <span className="ce-settings-row-label">Username</span>
+            <div className="ce-settings-row-control">
+              <Form.Item name="smtpUserName" noStyle><Input placeholder="user@example.com" /></Form.Item>
+            </div>
+          </div>
+          <div className="ce-settings-row">
+            <span className="ce-settings-row-label">Password</span>
+            <div className="ce-settings-row-control">
+              <Form.Item name="smtpPassword" noStyle><Input.Password placeholder="Password" /></Form.Item>
+            </div>
+          </div>
+          <div className="ce-settings-row">
+            <div>
+              <span className="ce-settings-row-label">Use Default</span>
+              <div className="ce-settings-row-desc">Use system default credentials</div>
+            </div>
+            <div className="ce-settings-row-control">
+              <Form.Item name="smtpUseDefaultCredentials" noStyle valuePropName="checked"><Switch /></Form.Item>
+            </div>
+          </div>
+        </div>
+
+        {/* Sender */}
+        <div className="ce-settings-label">Default Sender</div>
+        <div className="ce-settings-group">
+          <div className="ce-settings-row">
+            <span className="ce-settings-row-label">From Address</span>
+            <div className="ce-settings-row-control">
+              <Form.Item name="defaultFromAddress" noStyle rules={[{ required: true, type: 'email' }]}>
+                <Input placeholder="noreply@example.com" />
+              </Form.Item>
+            </div>
+          </div>
+          <div className="ce-settings-row">
+            <span className="ce-settings-row-label">Display Name</span>
+            <div className="ce-settings-row-control">
+              <Form.Item name="defaultFromDisplayName" noStyle>
+                <Input placeholder="My Application" />
+              </Form.Item>
+            </div>
+          </div>
+        </div>
+
+        <div className="ce-settings-footer">
+          <Button icon={<SendOutlined />} onClick={() => setTestModalOpen(true)}>Send Test</Button>
+          <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>Save Changes</Button>
+        </div>
+      </Form>
+
+      <Modal title="Send Test Email" open={testModalOpen} onCancel={() => setTestModalOpen(false)} onOk={handleSendTest} confirmLoading={sendingTest} okText="Send">
+        <Form form={testForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="senderEmailAddress" label="From" rules={[{ required: true, type: 'email' }]}><Input placeholder="noreply@example.com" /></Form.Item>
+          <Form.Item name="targetEmailAddress" label="To" rules={[{ required: true, type: 'email' }]}><Input placeholder="test@example.com" /></Form.Item>
+          <Form.Item name="subject" label="Subject" rules={[{ required: true }]}><Input placeholder="Test email" /></Form.Item>
+          <Form.Item name="body" label="Body" rules={[{ required: true }]}><Input.TextArea rows={3} placeholder="Hello..." /></Form.Item>
         </Form>
       </Modal>
     </Spin>
@@ -616,32 +646,34 @@ function TimezoneTab() {
 
   return (
     <Spin spinning={loading}>
-      <Card>
-        <div style={{ maxWidth: 480 }}>
-          <div style={{ marginBottom: 8 }}>
-            <span style={{ fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: '#7A7D8E' }}>
-              Timezone
-            </span>
-          </div>
-          <Select
-            showSearch
-            style={{ width: '100%' }}
-            value={current || undefined}
-            placeholder="Select a timezone"
-            optionFilterProp="label"
-            onChange={(val) => setCurrent(val)}
-            options={timezones.map((tz) => ({
-              value: tz.value,
-              label: tz.name || tz.value,
-            }))}
-          />
-          <div style={{ marginTop: 24 }}>
-            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
-              Save Changes
-            </Button>
+      <div>
+        <div className="ce-settings-label">Region</div>
+        <div className="ce-settings-group">
+          <div className="ce-settings-row">
+            <div>
+              <span className="ce-settings-row-label">Timezone</span>
+              <div className="ce-settings-row-desc">Affects date/time display across the platform</div>
+            </div>
+            <div className="ce-settings-row-control">
+              <Select
+                showSearch
+                style={{ width: 300 }}
+                value={current || undefined}
+                placeholder="Select a timezone"
+                optionFilterProp="label"
+                onChange={(val) => setCurrent(val)}
+                options={timezones.map((tz) => ({
+                  value: tz.value,
+                  label: tz.name || tz.value,
+                }))}
+              />
+            </div>
           </div>
         </div>
-      </Card>
+        <div className="ce-settings-footer">
+          <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>Save Changes</Button>
+        </div>
+      </div>
     </Spin>
   );
 }
@@ -922,44 +954,43 @@ function ModulesTab() {
 export default function SettingsPage() {
   return (
     <div className="ce-page-enter">
-      <div className="ce-stagger-2">
-        <Tabs
-          defaultActiveKey="appearance"
-          items={[
-            {
-              key: 'appearance',
-              label: <span><BgColorsOutlined style={{ marginRight: 6 }} />Appearance</span>,
-              children: <AppearanceTab />,
-            },
-            {
-              key: 'branding',
-              label: <span><EditOutlined style={{ marginRight: 6 }} />Branding</span>,
-              children: <BrandingTab />,
-            },
-            {
-              key: 'email',
-              label: (
-                <span><MailOutlined style={{ marginRight: 6 }} />Email</span>
-              ),
-              children: <EmailTab />,
-            },
-            {
-              key: 'timezone',
-              label: (
-                <span><ClockCircleOutlined style={{ marginRight: 6 }} />Timezone</span>
-              ),
-              children: <TimezoneTab />,
-            },
-            {
-              key: 'modules',
-              label: (
-                <span><AppstoreOutlined style={{ marginRight: 6 }} />Modules</span>
-              ),
-              children: <ModulesTab />,
-            },
-          ]}
-        />
-      </div>
+      <Tabs
+        defaultActiveKey="appearance"
+        tabPosition="left"
+        style={{ minHeight: 400 }}
+        tabBarStyle={{
+          width: 180,
+          borderRight: '1px solid var(--ce-border-light)',
+          paddingRight: 0,
+        }}
+        items={[
+          {
+            key: 'appearance',
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BgColorsOutlined /> Appearance</span>,
+            children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><AppearanceTab /></div>,
+          },
+          {
+            key: 'branding',
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><EditOutlined /> Branding</span>,
+            children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><BrandingTab /></div>,
+          },
+          {
+            key: 'email',
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><MailOutlined /> Email</span>,
+            children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><EmailTab /></div>,
+          },
+          {
+            key: 'timezone',
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ClockCircleOutlined /> Timezone</span>,
+            children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><TimezoneTab /></div>,
+          },
+          {
+            key: 'modules',
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><AppstoreOutlined /> Modules</span>,
+            children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><ModulesTab /></div>,
+          },
+        ]}
+      />
     </div>
   );
 }
