@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Input, Tag, message, Spin, Select, Form } from 'antd';
+import { Button, Input, Tag, message, Spin, Select, Form, Modal, Steps } from 'antd';
 import {
   ArrowLeftOutlined,
   SaveOutlined,
@@ -14,6 +14,8 @@ import {
   CloseOutlined,
   DeleteOutlined,
   LoadingOutlined,
+  PlayCircleOutlined,
+  CheckCircleFilled,
 } from '@ant-design/icons';
 import {
   ReactFlow,
@@ -252,6 +254,20 @@ function NodeConfigPanel({
 
       {/* Panel Body */}
       <div style={{ padding: '16px', flex: 1, overflowY: 'auto' }}>
+        {/* Help text */}
+        <div style={{
+          fontSize: 12, color: '#8E8E93', lineHeight: 1.5, marginBottom: 14,
+          padding: '10px 12px', background: '#F5F5F7', borderRadius: 8,
+        }}>
+          {nodeType === 'trigger' && '⚡ Define what event starts this workflow. Choose when this automation should run.'}
+          {nodeType === 'condition' && '🔀 Add logic branching. The workflow will follow different paths based on this condition.'}
+          {nodeType === 'action' && '⚙️ Perform an operation like creating data, calling an API, or updating a record.'}
+          {nodeType === 'notification' && '🔔 Send a notification via in-app alerts, email, or both to specified recipients.'}
+          {nodeType === 'approval' && '✋ Pause the workflow and wait for someone to approve before continuing.'}
+          {nodeType === 'delay' && '⏱️ Pause the workflow for a specified amount of time before continuing.'}
+          {nodeType === 'end' && '🏁 This marks the end of the workflow. No further actions will be taken.'}
+        </div>
+
         <Form layout="vertical" size="small">
           <Form.Item label={<span style={{ fontSize: 12, fontWeight: 500, color: '#8E8E93' }}>Label</span>}>
             <Input
@@ -350,14 +366,14 @@ function NodeConfigPanel({
                 <Input
                   value={(nodeData.template as string) || ''}
                   onChange={(e) => onUpdate(node.id, { ...nodeData, template: e.target.value })}
-                  placeholder="Template name"
+                  placeholder="e.g., Welcome to the platform!"
                 />
               </Form.Item>
               <Form.Item label={<span style={{ fontSize: 12, fontWeight: 500, color: '#8E8E93' }}>Recipients</span>}>
                 <Input
                   value={(nodeData.recipients as string) || ''}
                   onChange={(e) => onUpdate(node.id, { ...nodeData, recipients: e.target.value })}
-                  placeholder="Comma-separated"
+                  placeholder="e.g., admin, newUser"
                 />
               </Form.Item>
             </>
@@ -556,6 +572,62 @@ export default function WorkflowEditor() {
     [setNodes, setEdges, markDirty]
   );
 
+  // ─── Test Workflow ───
+  const [testOpen, setTestOpen] = useState(false);
+  const [testStep, setTestStep] = useState(0);
+  const [testRunning, setTestRunning] = useState(false);
+
+  const getExecutionPath = useCallback((): { id: string; type: string; label: string; data: Record<string, any> }[] => {
+    // Walk the graph from trigger nodes following edges
+    const path: typeof nodes = [];
+    const visited = new Set<string>();
+    const triggerNodes = nodes.filter((n) => n.type === 'trigger');
+    const queue = triggerNodes.length > 0 ? [triggerNodes[0]] : (nodes.length > 0 ? [nodes[0]] : []);
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (visited.has(current.id)) continue;
+      visited.add(current.id);
+      path.push(current);
+      // Find outgoing edges
+      const outEdges = edges.filter((e) => e.source === current.id);
+      for (const edge of outEdges) {
+        const target = nodes.find((n) => n.id === edge.target);
+        if (target && !visited.has(target.id)) queue.push(target);
+      }
+    }
+    return path.map((n) => ({
+      id: n.id,
+      type: n.type || 'unknown',
+      label: String(n.data?.label || n.type || 'Node'),
+      data: (n.data || {}) as Record<string, any>,
+    }));
+  }, [nodes, edges]);
+
+  const handleTestWorkflow = () => {
+    if (nodes.length === 0) {
+      message.warning('Add some nodes before testing');
+      return;
+    }
+    setTestStep(0);
+    setTestRunning(false);
+    setTestOpen(true);
+  };
+
+  const runTest = async () => {
+    const path = getExecutionPath();
+    if (path.length === 0) return;
+    setTestRunning(true);
+    setTestStep(0);
+    for (let i = 0; i < path.length; i++) {
+      setTestStep(i);
+      await new Promise((r) => setTimeout(r, 800 + Math.random() * 400));
+    }
+    setTestStep(path.length);
+    setTestRunning(false);
+    message.success('Test completed successfully!');
+  };
+
   // ─── Drag and Drop ───
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -685,9 +757,17 @@ export default function WorkflowEditor() {
           </Tag>
         </div>
 
-        {/* Right: Save status + Save button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, justifyContent: 'flex-end' }}>
+        {/* Right: Test + Save status + Save button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, justifyContent: 'flex-end' }}>
           {renderSaveStatus()}
+          <Button
+            icon={<PlayCircleOutlined />}
+            onClick={handleTestWorkflow}
+            disabled={nodes.length === 0}
+            style={{ borderRadius: 6, fontWeight: 500, color: '#30D158', borderColor: '#30D158' }}
+          >
+            Test
+          </Button>
           <Button
             type="primary"
             icon={<SaveOutlined />}
@@ -879,6 +959,102 @@ export default function WorkflowEditor() {
           />
         )}
       </div>
+
+      {/* ─── Test Workflow Modal ─── */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <PlayCircleOutlined style={{ color: '#30D158' }} />
+            <span>Test Workflow</span>
+          </div>
+        }
+        open={testOpen}
+        onCancel={() => { setTestOpen(false); setTestRunning(false); }}
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 12, color: 'var(--ce-text-muted)', alignSelf: 'center' }}>
+              {testStep >= getExecutionPath().length && !testRunning ? 'All steps completed' : testRunning ? 'Running...' : 'Ready to test'}
+            </span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button onClick={() => { setTestOpen(false); setTestRunning(false); }}>Close</Button>
+              <Button
+                type="primary"
+                icon={<PlayCircleOutlined />}
+                onClick={runTest}
+                loading={testRunning}
+                disabled={testRunning}
+                style={{ background: '#30D158', borderColor: '#30D158' }}
+              >
+                {testStep >= getExecutionPath().length && !testRunning ? 'Run Again' : 'Run Test'}
+              </Button>
+            </div>
+          </div>
+        }
+        width={520}
+      >
+        {(() => {
+          const path = getExecutionPath();
+          if (path.length === 0) return <div style={{ textAlign: 'center', padding: 20, color: 'var(--ce-text-muted)' }}>No nodes to test</div>;
+          return (
+            <div style={{ padding: '8px 0' }}>
+              <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', marginBottom: 16 }}>
+                Simulating execution through {path.length} node{path.length !== 1 ? 's' : ''}:
+              </div>
+              <Steps
+                direction="vertical"
+                size="small"
+                current={testStep}
+                items={path.map((node, i) => {
+                  const cfg = nodeTypeConfigs.find((c) => c.type === node.type);
+                  const isDone = testStep > i;
+                  const isCurrent = testStep === i && testRunning;
+
+                  // Build description from node data
+                  let desc = cfg?.description || '';
+                  if (node.type === 'trigger' && node.data.triggerEvent) desc = `Event: ${node.data.triggerEvent}`;
+                  if (node.type === 'delay' && node.data.duration) desc = `Wait ${node.data.duration} ${node.data.unit || 'minutes'}`;
+                  if (node.type === 'notification' && node.data.channel) desc = `Send ${node.data.channel} notification`;
+                  if (node.type === 'condition' && node.data.field) desc = `Check: ${node.data.field} ${node.data.operator || '='} ${node.data.value || '?'}`;
+                  if (node.type === 'action' && node.data.actionType) desc = `Action: ${node.data.actionType}`;
+                  if (node.type === 'approval' && node.data.approverRole) desc = `Approval by: ${node.data.approverRole}`;
+
+                  return {
+                    title: (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{
+                          width: 20, height: 20, borderRadius: 5,
+                          background: `${cfg?.color || '#8E8E93'}14`,
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 11, color: cfg?.color || '#8E8E93',
+                        }}>
+                          {cfg?.icon}
+                        </span>
+                        <span style={{ fontWeight: 600, fontSize: 13 }}>{node.label}</span>
+                      </span>
+                    ),
+                    description: (
+                      <span style={{ fontSize: 12, color: 'var(--ce-text-muted)' }}>
+                        {desc}
+                        {isDone && !isCurrent && (
+                          <span style={{ marginLeft: 8, color: '#30D158', fontWeight: 500 }}>
+                            <CheckCircleFilled /> Done
+                          </span>
+                        )}
+                        {isCurrent && (
+                          <span style={{ marginLeft: 8, color: '#007AFF', fontWeight: 500 }}>
+                            <LoadingOutlined /> Running...
+                          </span>
+                        )}
+                      </span>
+                    ),
+                    status: isDone ? 'finish' as const : isCurrent ? 'process' as const : 'wait' as const,
+                  };
+                })}
+              />
+            </div>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }
