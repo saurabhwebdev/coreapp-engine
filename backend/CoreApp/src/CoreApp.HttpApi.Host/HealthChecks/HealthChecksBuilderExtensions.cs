@@ -14,7 +14,11 @@ public static class HealthChecksBuilderExtensions
     {
         // Add your health checks here
         var healthChecksBuilder = services.AddHealthChecks();
-        healthChecksBuilder.AddCheck<CoreAppDatabaseCheck>("CoreApp DbContext Check", tags: new string[] { "database" });
+        healthChecksBuilder.AddCheck<CoreAppDatabaseCheck>("Database Connection", tags: new string[] { "database", "core" });
+        healthChecksBuilder.AddCheck<OpenIddictHealthCheck>("Auth Server (OpenIddict)", tags: new string[] { "auth", "openiddict" });
+        healthChecksBuilder.AddCheck<AuditLogHealthCheck>("Audit Logging", tags: new string[] { "audit", "logging" });
+        healthChecksBuilder.AddCheck<BlobStorageHealthCheck>("Blob Storage (File System)", tags: new string[] { "storage", "files" });
+        healthChecksBuilder.AddCheck<BackgroundJobsHealthCheck>("Background Jobs Engine", tags: new string[] { "jobs", "background" });
 
         services.ConfigureHealthCheckEndpoint("/health-status");
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -21,12 +21,11 @@ public class CoreAppDatabaseCheck : IHealthCheck, ITransientDependency
         try
         {
             await IdentityRoleRepository.GetListAsync(sorting: nameof(IdentityRole.Id), maxResultCount: 1, cancellationToken: cancellationToken);
-
-            return HealthCheckResult.Healthy($"Could connect to database and get record.");
+            return HealthCheckResult.Healthy("Could connect to database and get record.");
         }
         catch (Exception e)
         {
-            return HealthCheckResult.Unhealthy($"Error when trying to get database record. ", e);
+            return HealthCheckResult.Unhealthy("Error when trying to get database record.", e);
         }
     }
 }

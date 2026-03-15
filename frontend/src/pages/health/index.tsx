@@ -71,12 +71,35 @@ export default function HealthPage() {
   );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Uptime history — stores last 60 check results
+  const [uptimeHistory, setUptimeHistory] = useState<{ time: Date; status: string; duration: number }[]>(() => {
+    try {
+      const stored = localStorage.getItem('ce-uptime-history');
+      if (stored) return JSON.parse(stored).map((h: any) => ({ ...h, time: new Date(h.time) }));
+    } catch { /* */ }
+    return [];
+  });
+
   const fetchHealth = useCallback(async () => {
     try {
       const res = await getHealthStatus();
       setReport(res.data);
+      // Record uptime history
+      const dur = parseDuration(res.data.totalDuration);
+      const entry = { time: new Date(), status: res.data.status, duration: parseFloat(dur) || 0 };
+      setUptimeHistory((prev) => {
+        const updated = [...prev, entry].slice(-60); // keep last 60
+        try { localStorage.setItem('ce-uptime-history', JSON.stringify(updated)); } catch { /* */ }
+        return updated;
+      });
     } catch {
       setReport(null);
+      const entry = { time: new Date(), status: 'Unreachable', duration: 0 };
+      setUptimeHistory((prev) => {
+        const updated = [...prev, entry].slice(-60);
+        try { localStorage.setItem('ce-uptime-history', JSON.stringify(updated)); } catch { /* */ }
+        return updated;
+      });
     }
     setLastCheck(new Date());
     setLoading(false);
@@ -234,6 +257,76 @@ export default function HealthPage() {
         </button>
       </div>
 
+      {/* ─── Uptime Timeline ─── */}
+      {uptimeHistory.length > 1 && (
+        <div style={{ ...card, marginBottom: 20, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ce-text)' }}>
+              Uptime Timeline
+            </span>
+            <span style={{ fontSize: 11, color: 'var(--ce-text-muted)' }}>
+              Last {uptimeHistory.length} checks &middot; {(() => {
+                const first = uptimeHistory[0]?.time;
+                const last = uptimeHistory[uptimeHistory.length - 1]?.time;
+                if (!first || !last) return '';
+                const diffMs = new Date(last).getTime() - new Date(first).getTime();
+                const mins = Math.round(diffMs / 60000);
+                if (mins < 60) return `${mins}m span`;
+                return `${Math.round(mins / 60)}h ${mins % 60}m span`;
+              })()}
+            </span>
+          </div>
+          {/* Bar chart */}
+          <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 48 }}>
+            {uptimeHistory.map((h, i) => {
+              const isHealthy = h.status.toLowerCase() === 'healthy';
+              const isUnreachable = h.status.toLowerCase() === 'unreachable';
+              const color = isHealthy ? '#30D158' : isUnreachable ? '#FF3B30' : '#FF9F0A';
+              const maxDur = Math.max(...uptimeHistory.map((x) => x.duration), 1);
+              const barH = Math.max(6, (h.duration / maxDur) * 44);
+              return (
+                <div
+                  key={i}
+                  title={`${new Date(h.time).toLocaleTimeString()} — ${h.status} (${h.duration.toFixed(1)}ms)`}
+                  style={{
+                    flex: 1,
+                    height: barH,
+                    background: color,
+                    borderRadius: 2,
+                    opacity: 0.8,
+                    transition: 'opacity 0.1s, height 0.3s',
+                    cursor: 'default',
+                    minWidth: 3,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.8'; }}
+                />
+              );
+            })}
+          </div>
+          {/* Time labels */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+            <span style={{ fontSize: 10, color: 'var(--ce-text-muted)', fontFamily: 'var(--ce-mono)' }}>
+              {uptimeHistory[0]?.time ? new Date(uptimeHistory[0].time).toLocaleTimeString() : ''}
+            </span>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--ce-text-muted)' }}>
+                <span style={{ width: 6, height: 6, borderRadius: 2, background: '#30D158' }} /> Healthy
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--ce-text-muted)' }}>
+                <span style={{ width: 6, height: 6, borderRadius: 2, background: '#FF9F0A' }} /> Degraded
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--ce-text-muted)' }}>
+                <span style={{ width: 6, height: 6, borderRadius: 2, background: '#FF3B30' }} /> Down
+              </span>
+            </div>
+            <span style={{ fontSize: 10, color: 'var(--ce-text-muted)', fontFamily: 'var(--ce-mono)' }}>
+              {uptimeHistory[uptimeHistory.length - 1]?.time ? new Date(uptimeHistory[uptimeHistory.length - 1].time).toLocaleTimeString() : ''}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* ─── Health Checks Grid ─── */}
       <div style={{ ...card, marginBottom: 20 }}>
         <div style={sectionHeader}>
@@ -249,69 +342,93 @@ export default function HealthPage() {
             {report ? 'No health checks configured' : 'Health endpoint unreachable'}
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-            gap: 1,
-            background: 'var(--ce-border-light)',
-          }}>
-            {entries.map(([name, entry]) => (
+          <div>
+            {entries.map(([name, entry], i) => (
               <div
                 key={name}
                 style={{
                   background: 'var(--ce-bg-card)',
-                  padding: '16px 18px',
+                  padding: '18px 20px',
+                  borderBottom: i < entries.length - 1 ? '1px solid var(--ce-border-light)' : 'none',
                   transition: 'background 0.1s',
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--ce-bg-inset)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--ce-bg-card)'; }}
               >
-                {/* Name + status */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{
-                    width: 8, height: 8, borderRadius: '50%',
-                    background: statusColor(entry.status), flexShrink: 0,
-                  }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ce-text)' }}>{name}</span>
-                  <span style={{
-                    marginLeft: 'auto',
-                    fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
-                    color: statusColor(entry.status), letterSpacing: 0.5,
-                  }}>
-                    {entry.status}
-                  </span>
-                </div>
-
-                {/* Description */}
-                {entry.description && (
-                  <div style={{ fontSize: 12, color: 'var(--ce-text-secondary)', marginBottom: 10, lineHeight: 1.5 }}>
-                    {entry.description}
-                  </div>
-                )}
-
-                {/* Duration + Tags */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{
-                    fontFamily: 'var(--ce-mono)', fontSize: 11, fontWeight: 500,
-                    color: 'var(--ce-text-muted)', background: 'var(--ce-bg-inset)',
-                    padding: '2px 8px', borderRadius: 4,
-                  }}>
-                    {parseDuration(entry.duration)}
-                  </span>
-                  {entry.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      style={{
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                  {/* Left: Status + Info */}
+                  <div style={{ flex: 1 }}>
+                    {/* Name + status */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      {statusIcon(entry.status, 16)}
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ce-text)' }}>{name}</span>
+                      <span style={{
                         fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
-                        letterSpacing: 0.5, color: 'var(--ce-text-muted)',
-                        padding: '2px 7px', borderRadius: 4,
-                        border: '1px solid var(--ce-border-light)',
-                        background: 'transparent',
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                        color: statusColor(entry.status), letterSpacing: 0.5,
+                        padding: '1px 8px', borderRadius: 10,
+                        background: `${statusColor(entry.status)}12`,
+                      }}>
+                        {entry.status}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    {entry.description && (
+                      <div style={{ fontSize: 12, color: 'var(--ce-text-secondary)', marginBottom: 10, lineHeight: 1.5, paddingLeft: 24 }}>
+                        {entry.description}
+                      </div>
+                    )}
+
+                    {/* Duration + Tags */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingLeft: 24 }}>
+                      <span style={{
+                        fontFamily: 'var(--ce-mono)', fontSize: 11, fontWeight: 600,
+                        color: 'var(--ce-text)', background: 'var(--ce-bg-inset)',
+                        padding: '3px 10px', borderRadius: 4,
+                      }}>
+                        {parseDuration(entry.duration)}
+                      </span>
+                      {entry.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          style={{
+                            fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+                            letterSpacing: 0.5, color: 'var(--ce-text-muted)',
+                            padding: '3px 8px', borderRadius: 4,
+                            border: '1px solid var(--ce-border-light)',
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right: Response Time Visual Bar */}
+                  <div style={{ width: 160, flexShrink: 0 }}>
+                    <div style={{ fontSize: 10, color: 'var(--ce-text-muted)', marginBottom: 6, textAlign: 'right' }}>
+                      Response Time
+                    </div>
+                    <div style={{
+                      height: 6, background: 'var(--ce-bg-inset)', borderRadius: 3,
+                      overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        height: '100%', borderRadius: 3,
+                        background: statusColor(entry.status),
+                        width: `${Math.min(100, (parseFloat(parseDuration(entry.duration)) / 100) * 100)}%`,
+                        minWidth: 8,
+                        transition: 'width 0.5s ease',
+                      }} />
+                    </div>
+                    <div style={{
+                      fontSize: 18, fontWeight: 700, color: 'var(--ce-text)',
+                      fontFamily: 'var(--ce-mono)', textAlign: 'right', marginTop: 4,
+                      letterSpacing: -0.5,
+                    }}>
+                      {parseDuration(entry.duration)}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
