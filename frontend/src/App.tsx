@@ -94,6 +94,10 @@ export default function App() {
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => { window.removeEventListener('storage', handler); observer.disconnect(); };
   }, []);
+
+  // Test component to verify ErrorBoundary — navigate to /test-error
+  function TestError(): never { throw new Error('This is a test error to verify the ErrorBoundary is working.'); }
+
   return (
     <AuthProvider {...oidcConfig}>
       <QueryClientProvider client={queryClient}>
@@ -135,6 +139,7 @@ export default function App() {
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="profile" element={<ProfilePage />} />
+                  <Route path="test-error" element={<TestError />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>

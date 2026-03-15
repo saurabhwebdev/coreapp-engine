@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Switch, message, Popconfirm, Tag, Checkbox } from 'antd';
+import { Button, Space, Modal, Form, Input, Switch, message, Popconfirm, Tag, Checkbox } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons';
+import DataTable from '../../../components/DataTable';
 import {
   getRoles,
   createRole,
@@ -127,28 +128,17 @@ export default function RolesPage() {
 
   return (
     <div>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 0', marginBottom: 16,
-        borderBottom: '1px solid var(--ce-border-light)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: 'var(--ce-text-muted)', fontWeight: 500 }}>
-            {totalCount} role{totalCount !== 1 ? 's' : ''}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-            New Role
-          </Button>
-        </div>
-      </div>
-
-      <Table
+      <DataTable
         dataSource={roles}
         rowKey="id"
         loading={loading}
-        pagination={{ total: totalCount }}
+        searchFields={['name']}
+        searchPlaceholder="Search roles..."
+        toolbar={
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            New Role
+          </Button>
+        }
         columns={[
           {
             title: 'Name',

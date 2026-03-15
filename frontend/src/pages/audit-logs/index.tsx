@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Table, Tag, DatePicker, Select, Input, Button, Space, Modal, Descriptions, Collapse } from 'antd';
+import { Tag, DatePicker, Select, Input, Button, Space, Modal, Descriptions, Collapse } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import DataTable from '../../components/DataTable';
 import { getAuditLogs, getAuditLog, type AuditLogDto } from '../../services/audit-log';
 import dayjs from 'dayjs';
 
@@ -109,10 +110,11 @@ export default function AuditLogsPage() {
       </div>
 
       <div className="ce-stagger-3">
-        <Table
+        <DataTable
           dataSource={logs}
           rowKey="id"
           loading={loading}
+          showSearch={false}
           size="small"
           pagination={{
             current: page,
