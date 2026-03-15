@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Table, Tag } from 'antd';
+import { Tag } from 'antd';
 import { getBackgroundJobs, type BackgroundJobDto } from '../../services/background-jobs';
+import DataTable from '../../components/DataTable';
 import dayjs from 'dayjs';
 
 const priorityLabels: Record<number, string> = {
@@ -55,11 +56,13 @@ export default function BackgroundJobsPage() {
   return (
     <div className="ce-page-enter">
       <div className="ce-stagger-2">
-        <Table
+        <DataTable
           dataSource={jobs}
           rowKey="id"
           loading={loading}
-          size="small"
+          searchFields={['jobName']}
+          searchPlaceholder="Search jobs..."
+          compact
           pagination={{
             current: page,
             pageSize,

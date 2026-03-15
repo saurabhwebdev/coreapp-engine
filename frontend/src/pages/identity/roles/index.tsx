@@ -15,7 +15,6 @@ import {
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<IdentityRoleDto[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [permModalOpen, setPermModalOpen] = useState(false);
@@ -29,7 +28,6 @@ export default function RolesPage() {
     try {
       const res = await getRoles({ maxResultCount: 100 });
       setRoles(res.data.items);
-      setTotalCount(res.data.totalCount);
     } catch {
       message.error('Failed to load roles');
     }

@@ -21,6 +21,7 @@ import WorkflowEditor from './pages/workflows/editor';
 import ChatPage from './pages/chat';
 import FormsPage from './pages/forms';
 import ReportsPage from './pages/reports';
+import HealthPage from './pages/health';
 import SettingsPage from './pages/settings';
 import ProfilePage from './pages/profile';
 import NotFound from './pages/error/NotFound';
@@ -129,6 +130,7 @@ export default function App() {
                   <Route path="identity/roles" element={<RolesPage />} />
                   <Route path="tenants" element={<TenantsPage />} />
                   <Route path="background-jobs" element={<BackgroundJobsPage />} />
+                  <Route path="health" element={<HealthPage />} />
                   <Route path="audit-logs" element={<AuditLogsPage />} />
                   <Route path="notifications" element={<NotificationsPage />} />
                   <Route path="workflows" element={<WorkflowsPage />} />

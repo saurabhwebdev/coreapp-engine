@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Space, Upload, Modal, Form, Input, message, Popconfirm, Breadcrumb, Tag } from 'antd';
+import { Button, Space, Upload, Modal, Form, Input, message, Popconfirm, Breadcrumb, Tag } from 'antd';
 import { UploadOutlined, FolderAddOutlined, DeleteOutlined, DownloadOutlined, FolderOutlined, FileOutlined } from '@ant-design/icons';
 import { getFiles, uploadFile, createDirectory, deleteFile, downloadFile, type FileDescriptorDto } from '../../services/file';
+import DataTable from '../../components/DataTable';
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '-';
@@ -95,28 +96,6 @@ export default function FilesPage() {
 
   return (
     <div className="ce-page-enter">
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 0', marginBottom: 16,
-        borderBottom: '1px solid var(--ce-border-light)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: 'var(--ce-text-muted)', fontWeight: 500 }}>
-            {totalCount} item{totalCount !== 1 ? 's' : ''}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Space size={8}>
-            <Button icon={<FolderAddOutlined />} onClick={() => setFolderModalOpen(true)}>
-              New Folder
-            </Button>
-            <Upload beforeUpload={handleUpload} showUploadList={false}>
-              <Button type="primary" icon={<UploadOutlined />}>Upload</Button>
-            </Upload>
-          </Space>
-        </div>
-      </div>
-
       <div className="ce-stagger-1" style={{ marginBottom: 16 }}>
         <Breadcrumb
           items={breadcrumb.map((item, index) => ({
@@ -137,12 +116,23 @@ export default function FilesPage() {
       </div>
 
       <div className="ce-stagger-2">
-        <Table
+        <DataTable
           dataSource={files} rowKey="id" loading={loading} size="small"
+          showSearch={false}
           pagination={{
             current: page, pageSize, total: totalCount,
             onChange: (p) => { setPage(p); loadFiles(currentParent, p); },
           }}
+          toolbar={
+            <Space size={8}>
+              <Button icon={<FolderAddOutlined />} onClick={() => setFolderModalOpen(true)}>
+                New Folder
+              </Button>
+              <Upload beforeUpload={handleUpload} showUploadList={false}>
+                <Button type="primary" icon={<UploadOutlined />}>Upload</Button>
+              </Upload>
+            </Space>
+          }
           columns={[
             {
               title: 'Name', dataIndex: 'name', key: 'name',

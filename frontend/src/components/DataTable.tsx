@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Table, Input, Select, Space } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import type { ExpandableConfig } from 'antd/es/table/interface';
 
 interface FilterOption {
   key: string;
@@ -25,6 +26,7 @@ interface DataTableProps<T> {
   pagination?: TablePaginationConfig | false; // external pagination override (e.g. server-side)
   onRow?: (record: T) => React.HTMLAttributes<HTMLElement>;
   size?: 'small' | 'middle' | 'large';
+  expandable?: ExpandableConfig<T>;
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -43,6 +45,7 @@ export default function DataTable<T extends Record<string, any>>({
   pagination: paginationOverride,
   onRow,
   size,
+  expandable,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
@@ -148,6 +151,7 @@ export default function DataTable<T extends Record<string, any>>({
         size={size ?? (compact ? 'small' : 'middle')}
         pagination={pagination}
         onRow={onRow}
+        expandable={expandable}
       />
     </div>
   );

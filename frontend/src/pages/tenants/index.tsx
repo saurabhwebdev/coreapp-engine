@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Space, Modal, Form, Input, message, Popconfirm, Tooltip } from 'antd';
+import { Button, Space, Modal, Form, Input, message, Popconfirm, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { getTenants, createTenant, updateTenant, deleteTenant, type TenantDto } from '../../services/tenant';
 import FeaturesModal from '../../components/FeaturesModal';
+import DataTable from '../../components/DataTable';
 
 export default function TenantsPage() {
   const [tenants, setTenants] = useState<TenantDto[]>([]);
@@ -73,34 +74,23 @@ export default function TenantsPage() {
 
   return (
     <div className="ce-page-enter">
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 0', marginBottom: 16,
-        borderBottom: '1px solid var(--ce-border-light)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: 'var(--ce-text-muted)', fontWeight: 500 }}>
-            {totalCount} tenant{totalCount !== 1 ? 's' : ''}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-            New Tenant
-          </Button>
-        </div>
-      </div>
-
       <div className="ce-stagger-2">
-        <Table
+        <DataTable
           dataSource={tenants}
           rowKey="id"
           loading={loading}
+          showSearch={false}
           pagination={{
             current: page,
             pageSize,
             total: totalCount,
             onChange: (p) => { setPage(p); loadTenants(p); },
           }}
+          toolbar={
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+              New Tenant
+            </Button>
+          }
           columns={[
             { title: 'Name', dataIndex: 'name', key: 'name' },
             {
