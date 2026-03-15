@@ -4,6 +4,7 @@ import { AuthProvider } from 'react-oidc-context';
 import { ConfigProvider, App as AntApp, theme } from 'antd';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { oidcConfig } from './auth/config';
+import { applyColorThemeCss, getAntTokensForTheme } from './utils/theme';
 import ProtectedRoute from './auth/ProtectedRoute';
 import AuthCallback from './auth/AuthCallback';
 import AdminLayout from './layouts/AdminLayout';
@@ -73,6 +74,14 @@ const darkTheme = {
 
 export default function App() {
   const [isDark, setIsDark] = useState(() => localStorage.getItem('ce-theme') === 'dark');
+  const [, setThemeVersion] = useState(0);
+
+  useEffect(() => {
+    applyColorThemeCss();
+    const handler = () => { setThemeVersion((v) => v + 1); };
+    window.addEventListener('theme-changed', handler);
+    return () => window.removeEventListener('theme-changed', handler);
+  }, []);
 
   useEffect(() => {
     const handler = () => setIsDark(localStorage.getItem('ce-theme') === 'dark');
@@ -87,7 +96,13 @@ export default function App() {
   return (
     <AuthProvider {...oidcConfig}>
       <QueryClientProvider client={queryClient}>
-        <ConfigProvider theme={isDark ? darkTheme : lightTheme}>
+        <ConfigProvider theme={{
+          ...(isDark ? darkTheme : lightTheme),
+          token: {
+            ...(isDark ? darkTheme : lightTheme).token,
+            ...getAntTokensForTheme(isDark),
+          },
+        }}>
           <AntApp>
             <BrowserRouter>
               <Routes>

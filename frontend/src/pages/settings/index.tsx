@@ -11,6 +11,7 @@ import {
   Modal,
   message,
   Spin,
+  Upload,
 } from 'antd';
 import {
   MailOutlined,
@@ -28,6 +29,9 @@ import {
   MessageOutlined,
   FormOutlined,
   BarChartOutlined,
+  BgColorsOutlined,
+  EditOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import {
   getEmailSettings,
@@ -45,6 +49,235 @@ import {
   type FeatureGroupDto,
   type FeatureDto,
 } from '../../services/features';
+import { colorThemes, getColorTheme, saveColorTheme, saveCustomColor, getCustomColor } from '../../utils/theme';
+import { getBranding, saveBranding, resetBranding } from '../../utils/branding';
+
+/* ─── Appearance Tab ─── */
+function AppearanceTab() {
+  const [activeTheme, setActiveTheme] = useState(getColorTheme().key);
+  const [customColor, setCustomColor] = useState(getCustomColor() || '#6366F1');
+
+  const handleSelect = (key: string) => {
+    setActiveTheme(key);
+    saveColorTheme(key);
+  };
+
+  const handleCustomColor = (hex: string) => {
+    setCustomColor(hex);
+    setActiveTheme('custom');
+    saveCustomColor(hex);
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', marginBottom: 16 }}>
+        Choose a preset or pick any custom color for the entire application.
+      </div>
+
+      {/* Presets */}
+      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 10 }}>
+        Presets
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+        {colorThemes.map((theme) => {
+          const isActive = activeTheme === theme.key;
+          return (
+            <div
+              key={theme.key}
+              onClick={() => handleSelect(theme.key)}
+              title={theme.name}
+              style={{
+                width: 40, height: 40, borderRadius: 10, cursor: 'pointer',
+                background: theme.accent,
+                border: isActive ? '3px solid var(--ce-text)' : '2px solid transparent',
+                outline: isActive ? `2px solid ${theme.accent}` : 'none',
+                outlineOffset: 2,
+                transition: 'all 0.12s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+            >
+              {isActive && (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8.5L6.5 12L13 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Custom color */}
+      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 10 }}>
+        Custom Color
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ position: 'relative' }}>
+          <input
+            type="color"
+            value={customColor}
+            onChange={(e) => handleCustomColor(e.target.value)}
+            style={{
+              width: 40, height: 40, border: 'none', padding: 0, cursor: 'pointer',
+              borderRadius: 10, overflow: 'hidden', background: 'transparent',
+            }}
+          />
+        </div>
+        <Input
+          value={customColor}
+          onChange={(e) => {
+            const v = e.target.value;
+            setCustomColor(v);
+            if (/^#[0-9A-Fa-f]{6}$/.test(v)) handleCustomColor(v);
+          }}
+          style={{ width: 120, fontFamily: 'var(--ce-mono)', fontSize: 12 }}
+          placeholder="#6366F1"
+        />
+        <span style={{ fontSize: 12, color: 'var(--ce-text-muted)' }}>
+          {activeTheme === 'custom' ? 'Active' : 'Pick any color'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Branding Tab ─── */
+function BrandingTab() {
+  const [config, setConfig] = useState(getBranding);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = () => {
+    setSaving(true);
+    saveBranding(config);
+    setTimeout(() => {
+      setSaving(false);
+      message.success('Branding updated');
+    }, 300);
+  };
+
+  const handleReset = () => {
+    resetBranding();
+    setConfig(getBranding());
+    message.success('Branding reset to defaults');
+  };
+
+  const handleLogoUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUri = e.target?.result as string;
+      setConfig((prev) => ({ ...prev, logoUrl: dataUri }));
+    };
+    reader.readAsDataURL(file);
+    return false; // prevent default upload
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', marginBottom: 20 }}>
+        Customize the application branding for white-label deployments.
+      </div>
+      <div style={{ maxWidth: 500 }}>
+        <Form layout="vertical">
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Form.Item label="App Name" style={{ flex: 1 }}>
+              <Input
+                value={config.appName}
+                onChange={(e) => setConfig((p) => ({ ...p, appName: e.target.value }))}
+                placeholder="CoreEngine"
+              />
+            </Form.Item>
+            <Form.Item label="Logo Text" style={{ width: 100 }}>
+              <Input
+                value={config.logoText}
+                onChange={(e) => setConfig((p) => ({ ...p, logoText: e.target.value.slice(0, 3) }))}
+                placeholder="CE"
+                maxLength={3}
+              />
+            </Form.Item>
+          </div>
+          <Form.Item label="Tagline">
+            <Input
+              value={config.tagline}
+              onChange={(e) => setConfig((p) => ({ ...p, tagline: e.target.value }))}
+              placeholder="Enterprise Platform"
+            />
+          </Form.Item>
+          <Form.Item label="Logo Image (optional)">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {config.logoUrl ? (
+                <div style={{
+                  width: 48, height: 48, borderRadius: 10, overflow: 'hidden',
+                  border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-inset)',
+                }}>
+                  <img src={config.logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
+              ) : (
+                <div style={{
+                  width: 48, height: 48, borderRadius: 10,
+                  border: '1px dashed var(--ce-border)', background: 'var(--ce-bg-inset)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--ce-text-muted)', fontSize: 11,
+                }}>
+                  None
+                </div>
+              )}
+              <Upload beforeUpload={handleLogoUpload} showUploadList={false} accept="image/*">
+                <Button size="small" icon={<UploadOutlined />}>Upload</Button>
+              </Upload>
+              {config.logoUrl && (
+                <Button size="small" danger onClick={() => setConfig((p) => ({ ...p, logoUrl: undefined }))}>
+                  Remove
+                </Button>
+              )}
+            </div>
+          </Form.Item>
+          <Form.Item label="Favicon URL (optional)">
+            <Input
+              value={config.faviconUrl || ''}
+              onChange={(e) => setConfig((p) => ({ ...p, faviconUrl: e.target.value || undefined }))}
+              placeholder="https://example.com/favicon.ico"
+            />
+          </Form.Item>
+        </Form>
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
+            Save Branding
+          </Button>
+          <Button onClick={handleReset}>Reset to Defaults</Button>
+        </div>
+
+        {/* Preview */}
+        <div style={{
+          marginTop: 24, padding: 16, borderRadius: 'var(--ce-radius)',
+          border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-inset)',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 12 }}>
+            Preview
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#1B1B1F', padding: '10px 14px', borderRadius: 'var(--ce-radius-sm)' }}>
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt="" style={{ width: 28, height: 28, borderRadius: 6 }} />
+            ) : (
+              <div style={{
+                width: 28, height: 28, borderRadius: 6,
+                background: 'linear-gradient(135deg, var(--ce-accent), var(--ce-accent-hover))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 11, fontWeight: 800,
+              }}>
+                {config.logoText}
+              </div>
+            )}
+            <div>
+              <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{config.appName}</div>
+              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5 }}>{config.tagline}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ─── Email Tab ─── */
 function EmailTab() {
@@ -509,8 +742,18 @@ export default function SettingsPage() {
     <div className="ce-page-enter">
       <div className="ce-stagger-2">
         <Tabs
-          defaultActiveKey="email"
+          defaultActiveKey="appearance"
           items={[
+            {
+              key: 'appearance',
+              label: <span><BgColorsOutlined style={{ marginRight: 6 }} />Appearance</span>,
+              children: <AppearanceTab />,
+            },
+            {
+              key: 'branding',
+              label: <span><EditOutlined style={{ marginRight: 6 }} />Branding</span>,
+              children: <BrandingTab />,
+            },
             {
               key: 'email',
               label: (

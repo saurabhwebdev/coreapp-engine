@@ -28,6 +28,8 @@ import { getUnreadCount } from '../services/notification';
 import { startConnection, onNotificationReceived } from '../services/signalr';
 import api from '../services/api';
 import { getAvatarConfig, generateAvatarDataUri } from '../utils/avatar';
+import { getBranding } from '../utils/branding';
+import { getColorTheme } from '../utils/theme';
 
 interface NavItem {
   key: string;
@@ -81,6 +83,8 @@ export default function AdminLayout() {
   const [enabledFeatures, setEnabledFeatures] = useState<Record<string, string>>({});
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ce-theme') === 'dark');
   const [avatarConfig, setAvatarConfig] = useState(getAvatarConfig);
+  const [branding, setBranding] = useState(getBranding);
+  const [colorTheme, setColorTheme] = useState(getColorTheme);
   const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -102,11 +106,17 @@ export default function AdminLayout() {
   useEffect(() => {
     const onFeaturesChanged = () => loadFeatures();
     const onAvatarChanged = () => setAvatarConfig(getAvatarConfig());
+    const onBrandingChanged = () => setBranding(getBranding());
+    const onThemeChanged = () => setColorTheme(getColorTheme());
     window.addEventListener('features-changed', onFeaturesChanged);
     window.addEventListener('avatar-changed', onAvatarChanged);
+    window.addEventListener('branding-changed', onBrandingChanged);
+    window.addEventListener('theme-changed', onThemeChanged);
     return () => {
       window.removeEventListener('features-changed', onFeaturesChanged);
       window.removeEventListener('avatar-changed', onAvatarChanged);
+      window.removeEventListener('branding-changed', onBrandingChanged);
+      window.removeEventListener('theme-changed', onThemeChanged);
     };
   }, []);
 
@@ -198,18 +208,24 @@ export default function AdminLayout() {
             flexShrink: 0,
           }}
         >
-          <div style={{
-            width: 34, height: 34, borderRadius: 8,
-            background: 'linear-gradient(135deg, #C2703E 0%, #D4973B 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, color: '#fff', fontSize: 14, letterSpacing: -0.5, flexShrink: 0,
-          }}>
-            CE
-          </div>
+          {branding.logoUrl ? (
+            <img src={branding.logoUrl} alt={branding.appName} style={{
+              width: 34, height: 34, borderRadius: 8, objectFit: 'contain', flexShrink: 0,
+            }} />
+          ) : (
+            <div style={{
+              width: 34, height: 34, borderRadius: 8,
+              background: `linear-gradient(135deg, ${colorTheme.accent} 0%, ${colorTheme.accentHover} 100%)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 800, color: '#fff', fontSize: 14, letterSpacing: -0.5, flexShrink: 0,
+            }}>
+              {branding.logoText}
+            </div>
+          )}
           {!collapsed && (
             <div style={{ marginLeft: 12, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-              <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', letterSpacing: -0.3, lineHeight: 1.2 }}>CoreEngine</div>
-              <div style={{ fontSize: 10, color: 'var(--ce-text-sidebar)', letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 500 }}>Enterprise Platform</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', letterSpacing: -0.3, lineHeight: 1.2 }}>{branding.appName}</div>
+              <div style={{ fontSize: 10, color: 'var(--ce-text-sidebar)', letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 500 }}>{branding.tagline}</div>
             </div>
           )}
         </div>
@@ -251,7 +267,7 @@ export default function AdminLayout() {
                         ...(collapsed
                           ? { width: 20, height: 3, borderRadius: 2 }
                           : { width: 3, height: 20, borderRadius: 2, transform: 'translateY(50%)' }),
-                        background: '#C2703E',
+                        background: colorTheme.accent,
                       }} />
                     )}
                     <span style={{ fontSize: 16, lineHeight: 1, opacity: active ? 1 : 0.7 }}>{item.icon}</span>
@@ -393,7 +409,7 @@ export default function AdminLayout() {
                 ) : (
                   <div style={{
                     width: 30, height: 30, borderRadius: 8,
-                    background: 'linear-gradient(135deg, #C2703E, #D4973B)',
+                    background: `linear-gradient(135deg, ${colorTheme.accent}, ${colorTheme.accentHover})`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: '#fff', fontWeight: 700, fontSize: 12,
                   }}>
