@@ -863,11 +863,11 @@ function ModulesTab() {
               })}
             </div>
           ) : (
-            /* ─── Grid View ─── */
+            /* ─── Grid View — Apple minimal ─── */
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: 12,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: 10,
             }}>
               {allFeatures.map((f) => {
                 const enabled = featureValues[f.name] === 'true';
@@ -876,65 +876,46 @@ function ModulesTab() {
                 return (
                   <div
                     key={f.name}
+                    className="ce-settings-group"
                     style={{
-                      background: 'var(--ce-bg-card)',
-                      border: '1px solid var(--ce-border-light)',
-                      borderRadius: 'var(--ce-radius)',
-                      padding: 16,
-                      opacity: isToggling ? 0.6 : 1,
-                      transition: 'opacity 0.15s, border-color 0.12s',
-                      borderTop: `2px solid ${enabled ? 'var(--ce-accent)' : 'var(--ce-border-light)'}`,
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ce-border)'; }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--ce-border-light)';
-                      e.currentTarget.style.borderTopColor = enabled ? 'var(--ce-accent)' : 'var(--ce-border-light)';
+                      padding: 14,
+                      marginBottom: 0,
+                      opacity: isToggling ? 0.5 : 1,
+                      transition: 'opacity 0.15s',
+                      textAlign: 'center',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 8,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 14, marginBottom: 10,
-                          background: enabled ? 'var(--ce-accent-light)' : 'var(--ce-bg-inset)',
-                          color: enabled ? 'var(--ce-accent)' : 'var(--ce-text-muted)',
-                          transition: 'all 0.2s',
-                        }}>
-                          {moduleIcons[f.name] || <AppstoreOutlined />}
-                        </div>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--ce-text)', marginBottom: 3 }}>
-                          {f.displayName}
-                        </div>
-                        {f.description && (
-                          <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', lineHeight: 1.4 }}>
-                            {f.description}
-                          </div>
-                        )}
-                        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <span style={{
-                            width: 6, height: 6, borderRadius: '50%',
-                            background: enabled ? 'var(--ce-success)' : 'var(--ce-text-muted)',
-                            transition: 'background 0.2s',
-                          }} />
-                          <span style={{
-                            fontSize: 11, fontWeight: 500,
-                            color: enabled ? 'var(--ce-success)' : 'var(--ce-text-muted)',
-                          }}>
-                            {enabled ? 'Active' : 'Inactive'}
-                          </span>
-                        </div>
-                      </div>
-                      {toggleable && (
-                        <Switch
-                          checked={enabled}
-                          loading={isToggling}
-                          onChange={(checked) => toggleFeature(f.name, checked)}
-                          size="small"
-                          style={{ marginLeft: 12, flexShrink: 0 }}
-                        />
-                      )}
+                    {/* Icon */}
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 17, marginBottom: 8,
+                      background: enabled ? 'var(--ce-accent-light)' : 'var(--ce-bg-inset)',
+                      color: enabled ? 'var(--ce-accent)' : 'var(--ce-text-muted)',
+                      transition: 'all 0.15s',
+                    }}>
+                      {moduleIcons[f.name] || <AppstoreOutlined />}
                     </div>
+                    {/* Name */}
+                    <div style={{ fontWeight: 600, fontSize: 12, color: 'var(--ce-text)', marginBottom: 2 }}>
+                      {f.displayName}
+                    </div>
+                    {/* Status */}
+                    <div style={{
+                      fontSize: 10, fontWeight: 500, marginBottom: 10,
+                      color: enabled ? 'var(--ce-success)' : 'var(--ce-text-muted)',
+                    }}>
+                      {enabled ? 'Active' : 'Off'}
+                    </div>
+                    {/* Switch */}
+                    {toggleable && (
+                      <Switch
+                        checked={enabled}
+                        loading={isToggling}
+                        onChange={(checked) => toggleFeature(f.name, checked)}
+                        size="small"
+                      />
+                    )}
                   </div>
                 );
               })}
