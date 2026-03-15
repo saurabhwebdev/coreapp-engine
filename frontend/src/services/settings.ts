@@ -30,7 +30,7 @@ export const getTimezoneSettings = () =>
   api.get<string>('/api/setting-management/timezone');
 
 export const updateTimezoneSettings = (timezone: string) =>
-  api.post('/api/setting-management/timezone', JSON.stringify(timezone), { headers: { 'Content-Type': 'application/json' } });
+  api.post('/api/setting-management/timezone', null, { params: { timezone } });
 
 export const getTimezones = () =>
   api.get<NameValue[]>('/api/setting-management/timezone/timezones');
