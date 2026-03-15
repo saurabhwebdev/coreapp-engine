@@ -1,0 +1,16 @@
+<Solution>
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+    <Folder Name="/src/">
+        <Project Path="src/CoreApp.Domain/CoreApp.Domain.csproj" />
+        <Project Path="src/CoreApp.Application/CoreApp.Application.csproj" />
+        <Project Path="src/CoreApp.EntityFrameworkCore/CoreApp.EntityFrameworkCore.csproj" />
+        <Project Path="src/CoreApp.Domain.Shared/CoreApp.Domain.Shared.csproj" />
+        <Project Path="src/CoreApp.Application.Contracts/CoreApp.Application.Contracts.csproj" />
+        <Project Path="src/CoreApp.HttpApi/CoreApp.HttpApi.csproj" />
+        <Project Path="src/CoreApp.HttpApi.Client/CoreApp.HttpApi.Client.csproj" />
+        <Project Path="src/CoreApp.DbMigrator/CoreApp.DbMigrator.csproj" />
+        <Project Path="src/CoreApp.HttpApi.Host/CoreApp.HttpApi.Host.csproj" />
+    </Folder>
+</Solution>

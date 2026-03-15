@@ -1,0 +1,88 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "5.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    },
+    "Volo.Abp.Account": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    },
+    "Volo.Abp.Identity": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "10.1.0",
+      "isInstalled": true,
+      "creationTime": "03/15/2026 15:31:41 +00:00"
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {}
+    }
+  },
+  "packages": {
+    "CoreApp.Application": {
+      "path": "src/CoreApp.Application/CoreApp.Application.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.Domain.Shared": {
+      "path": "src/CoreApp.Domain.Shared/CoreApp.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.Application.Contracts": {
+      "path": "src/CoreApp.Application.Contracts/CoreApp.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.HttpApi": {
+      "path": "src/CoreApp.HttpApi/CoreApp.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.HttpApi.Client": {
+      "path": "src/CoreApp.HttpApi.Client/CoreApp.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.EntityFrameworkCore": {
+      "path": "src/CoreApp.EntityFrameworkCore/CoreApp.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.DbMigrator": {
+      "path": "src/CoreApp.DbMigrator/CoreApp.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.HttpApi.Host": {
+      "path": "src/CoreApp.HttpApi.Host/CoreApp.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "CoreApp.Domain": {
+      "path": "src/CoreApp.Domain/CoreApp.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
