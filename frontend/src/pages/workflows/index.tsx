@@ -9,7 +9,6 @@ import {
   PlayCircleOutlined,
   PauseCircleOutlined,
   SearchOutlined,
-  BranchesOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -22,6 +21,7 @@ import {
   duplicateWorkflow,
   type WorkflowDefinitionDto,
 } from '../../services/workflow';
+import EmptyState from '../../components/EmptyState';
 
 dayjs.extend(relativeTime);
 
@@ -153,20 +153,7 @@ export default function WorkflowsPage() {
           <Spin size="large" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="ce-empty">
-          <div className="ce-empty-icon">
-            <BranchesOutlined />
-          </div>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, color: '#2D3142' }}>
-            No workflows yet
-          </div>
-          <div style={{ fontSize: 13, marginBottom: 20 }}>
-            Create your first automation workflow to get started.
-          </div>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-            New Workflow
-          </Button>
-        </div>
+        <EmptyState title="No workflows yet" description="Create your first visual automation workflow." actionLabel="New Workflow" onAction={handleCreate} />
       ) : (
         <div
           className="ce-stagger-2"

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Badge, Button, Space, Tag, message, Tabs } from 'antd';
-import { CheckOutlined, DeleteOutlined, CheckCircleOutlined, BellOutlined } from '@ant-design/icons';
+import { CheckOutlined, DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { getNotifications, markAsRead, markAllAsRead, deleteNotification, type UserNotificationDto } from '../../services/notification';
+import EmptyState from '../../components/EmptyState';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -103,12 +104,7 @@ export default function NotificationsPage() {
         )}
 
         {!loading && notifications.length === 0 && (
-          <div className="ce-empty">
-            <div className="ce-empty-icon">
-              <BellOutlined />
-            </div>
-            <div>No notifications</div>
-          </div>
+          <EmptyState title="All caught up" description="You have no notifications." />
         )}
 
         {!loading && notifications.map((item) => {

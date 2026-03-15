@@ -3,7 +3,6 @@ import { Input, Button, Badge, Spin, message, Modal, List, Avatar } from 'antd';
 import {
   SendOutlined,
   SearchOutlined,
-  MessageOutlined,
   PlusOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -19,6 +18,7 @@ import {
   type ChatMessageDto,
 } from '../../services/chat';
 import { getUsers, type IdentityUserDto } from '../../services/identity';
+import EmptyState from '../../components/EmptyState';
 
 dayjs.extend(relativeTime);
 
@@ -210,17 +210,14 @@ export default function ChatPage() {
             {contactsLoading ? (
               <div style={{ textAlign: 'center', padding: 40 }}><Spin size="small" /></div>
             ) : filteredContacts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 40, color: 'var(--ce-text-muted)', fontSize: 12 }}>
+              <div>
                 {contacts.length === 0 ? (
-                  <div>
-                    <MessageOutlined style={{ fontSize: 24, display: 'block', marginBottom: 8, opacity: 0.3 }} />
-                    No conversations yet
-                    <br />
-                    <Button type="link" size="small" onClick={() => setNewChatOpen(true)} style={{ marginTop: 4 }}>
-                      Start a new chat
-                    </Button>
+                  <EmptyState title="No conversations yet" description="Start a new chat to begin messaging." actionLabel="New Chat" onAction={() => setNewChatOpen(true)} compact />
+                ) : (
+                  <div style={{ textAlign: 'center', padding: 40, color: 'var(--ce-text-muted)', fontSize: 12 }}>
+                    No matches
                   </div>
-                ) : 'No matches'}
+                )}
               </div>
             ) : (
               filteredContacts.map((contact) => {
@@ -286,25 +283,9 @@ export default function ChatPage() {
           {!selectedContact ? (
             <div style={{
               flex: 1, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', color: 'var(--ce-text-muted)',
+              alignItems: 'center', justifyContent: 'center',
             }}>
-              <div style={{
-                width: 56, height: 56, borderRadius: 14,
-                background: 'var(--ce-accent-light)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 24, color: 'var(--ce-accent)', marginBottom: 16,
-              }}>
-                <MessageOutlined />
-              </div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ce-text)', marginBottom: 4 }}>
-                Select a conversation
-              </div>
-              <div style={{ fontSize: 13, marginBottom: 16 }}>
-                Choose a contact or start a new chat
-              </div>
-              <Button icon={<PlusOutlined />} onClick={() => setNewChatOpen(true)}>
-                New Chat
-              </Button>
+              <EmptyState title="Select a conversation" description="Choose a contact or start a new chat." actionLabel="New Chat" onAction={() => setNewChatOpen(true)} />
             </div>
           ) : (
             <>

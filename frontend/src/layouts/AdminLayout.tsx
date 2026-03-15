@@ -23,6 +23,7 @@ import {
   SunOutlined,
   MoonOutlined,
   RightOutlined,
+  SwapOutlined,
 } from '@ant-design/icons';
 import { getUnreadCount } from '../services/notification';
 import { startConnection, onNotificationReceived } from '../services/signalr';
@@ -86,6 +87,8 @@ export default function AdminLayout() {
   const [avatarConfig, setAvatarConfig] = useState(getAvatarConfig);
   const [branding, setBranding] = useState(getBranding);
   const [colorTheme, setColorTheme] = useState(getColorTheme);
+  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
+  const [currentTenantId, setCurrentTenantId] = useState<string | null>(() => localStorage.getItem('__tenant'));
   const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -167,9 +170,31 @@ export default function AdminLayout() {
     };
   }, []);
 
+  const loadTenants = async () => {
+    try {
+      // Only load tenants if we're host admin (no tenant context)
+      const savedTenant = localStorage.getItem('__tenant');
+      if (!savedTenant) {
+        const res = await api.get('/api/multi-tenancy/tenants', { params: { maxResultCount: 100 } });
+        setTenants(res.data?.items || []);
+      }
+    } catch { /* not authorized or not host — ignore */ }
+  };
+
+  const switchTenant = (tenantId: string | null) => {
+    if (tenantId) {
+      localStorage.setItem('__tenant', tenantId);
+    } else {
+      localStorage.removeItem('__tenant');
+    }
+    setCurrentTenantId(tenantId);
+    window.location.reload();
+  };
+
   useEffect(() => {
     loadFeatures();
     loadUnreadCount();
+    loadTenants();
     startConnection();
     const unsub = onNotificationReceived((data: any) => {
       setUnreadCount((c) => c + 1);
@@ -388,6 +413,57 @@ export default function AdminLayout() {
 
           {/* Right: Actions */}
           <Space size={12}>
+            {/* Tenant Switcher — visible to host admin or when tenants loaded */}
+            {(tenants.length > 0 || currentTenantId) && (
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'host',
+                      label: (
+                        <span style={{ fontWeight: !currentTenantId ? 700 : 400 }}>
+                          Host (System Admin)
+                        </span>
+                      ),
+                      icon: !currentTenantId ? <span style={{ color: 'var(--ce-success)', fontSize: 8 }}>●</span> : null,
+                    },
+                    { type: 'divider' as const },
+                    ...tenants.map((t) => ({
+                      key: t.id,
+                      label: (
+                        <span style={{ fontWeight: currentTenantId === t.id ? 700 : 400 }}>
+                          {t.name}
+                        </span>
+                      ),
+                      icon: currentTenantId === t.id ? <span style={{ color: 'var(--ce-success)', fontSize: 8 }}>●</span> : null,
+                    })),
+                  ],
+                  onClick: ({ key }) => switchTenant(key === 'host' ? null : key),
+                }}
+                placement="bottomRight"
+                trigger={['click']}
+              >
+                <button
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '5px 10px',
+                    border: '1px solid var(--ce-border)', borderRadius: 8,
+                    background: currentTenantId ? 'var(--ce-accent-light)' : 'var(--ce-bg-card)',
+                    cursor: 'pointer', fontSize: 12, fontWeight: 500,
+                    color: currentTenantId ? 'var(--ce-accent)' : 'var(--ce-text-secondary)',
+                    fontFamily: 'inherit', transition: 'all 0.12s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--ce-accent)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ce-border)'; }}
+                >
+                  <SwapOutlined style={{ fontSize: 13 }} />
+                  {currentTenantId
+                    ? tenants.find((t) => t.id === currentTenantId)?.name || 'Tenant'
+                    : 'Host'}
+                </button>
+              </Dropdown>
+            )}
+
             {/* Dark mode toggle — circular reveal */}
             <button
               ref={themeToggleRef}

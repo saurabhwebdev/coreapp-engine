@@ -18,7 +18,6 @@ import {
   DeleteOutlined,
   EyeOutlined,
   SearchOutlined,
-  FormOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
   CheckCircleOutlined,
@@ -37,6 +36,7 @@ import {
   type FormDefinitionDto,
   type FormSubmissionDto,
 } from '../../services/forms';
+import EmptyState from '../../components/EmptyState';
 
 dayjs.extend(relativeTime);
 
@@ -285,20 +285,7 @@ export default function FormsPage() {
           <Spin size="large" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="ce-empty">
-          <div className="ce-empty-icon">
-            <FormOutlined />
-          </div>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, color: '#2D3142' }}>
-            No forms yet
-          </div>
-          <div style={{ fontSize: 13, marginBottom: 20 }}>
-            Create your first dynamic form to start collecting data.
-          </div>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleNewForm}>
-            New Form
-          </Button>
-        </div>
+        <EmptyState title="No forms yet" description="Create your first dynamic form to start collecting data." actionLabel="New Form" onAction={handleNewForm} />
       ) : (
         <div
           className="ce-stagger-2"

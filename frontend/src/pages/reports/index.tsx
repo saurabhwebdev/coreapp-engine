@@ -33,6 +33,7 @@ import {
   type ReportDefinitionDto,
   type RunReportResultDto,
 } from '../../services/reports';
+import EmptyState from '../../components/EmptyState';
 
 dayjs.extend(relativeTime);
 
@@ -277,20 +278,7 @@ export default function ReportsPage() {
           <Spin size="large" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="ce-empty">
-          <div className="ce-empty-icon">
-            <BarChartOutlined />
-          </div>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, color: '#2D3142' }}>
-            No reports yet
-          </div>
-          <div style={{ fontSize: 13, marginBottom: 20 }}>
-            Create your first report to start generating insights.
-          </div>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleNewReport}>
-            New Report
-          </Button>
-        </div>
+        <EmptyState title="No reports yet" description="Create your first report to start generating insights." actionLabel="New Report" onAction={handleNewReport} />
       ) : (
         <div
           className="ce-stagger-2"

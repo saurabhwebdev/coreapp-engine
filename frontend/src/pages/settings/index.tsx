@@ -49,6 +49,7 @@ import {
   type FeatureGroupDto,
   type FeatureDto,
 } from '../../services/features';
+import EmptyState from '../../components/EmptyState';
 import { colorThemes, getColorTheme, saveColorTheme, saveCustomColor, getCustomColor } from '../../utils/theme';
 import { getBranding, saveBranding, resetBranding } from '../../utils/branding';
 
@@ -795,10 +796,7 @@ function ModulesTab() {
         </>
       ) : (
         !loading && (
-          <div className="ce-empty">
-            <div className="ce-empty-icon"><AppstoreOutlined /></div>
-            <div>No modules configured</div>
-          </div>
+          <EmptyState title="No modules configured" description="Feature flags will appear here once configured." compact />
         )
       )}
     </Spin>
