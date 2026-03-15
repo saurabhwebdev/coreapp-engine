@@ -9,6 +9,8 @@ import {
   PlayCircleOutlined,
   PauseCircleOutlined,
   SearchOutlined,
+  UnorderedListOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -37,6 +39,7 @@ export default function WorkflowsPage() {
   const [workflows, setWorkflows] = useState<WorkflowDefinitionDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   useEffect(() => {
     loadWorkflows();
@@ -158,6 +161,29 @@ export default function WorkflowsPage() {
             allowClear
             style={{ width: 240 }}
           />
+          <div style={{
+            display: 'inline-flex', borderRadius: 'var(--ce-radius-sm, 5px)',
+            border: '1px solid var(--ce-border, #D2D2D7)', overflow: 'hidden',
+          }}>
+            {([
+              { key: 'list' as const, icon: <UnorderedListOutlined /> },
+              { key: 'grid' as const, icon: <AppstoreOutlined /> },
+            ]).map((v) => (
+              <button
+                key={v.key}
+                onClick={() => setViewMode(v.key)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 28, border: 'none', cursor: 'pointer',
+                  background: viewMode === v.key ? 'var(--ce-accent, #C2703E)' : 'var(--ce-bg-card, #fff)',
+                  color: viewMode === v.key ? '#fff' : 'var(--ce-text-muted, #AEAEB2)',
+                  fontSize: 13, transition: 'all 0.12s', fontFamily: 'inherit',
+                }}
+              >
+                {v.icon}
+              </button>
+            ))}
+          </div>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             New Workflow
           </Button>
@@ -176,6 +202,81 @@ export default function WorkflowsPage() {
           onAction={handleCreate}
         />
       ) : (
+        viewMode === 'list' ? (
+        /* ─── List View ─── */
+        <div style={{
+          border: '1px solid var(--ce-border-light, #E8E8ED)',
+          borderRadius: 'var(--ce-radius, 8px)',
+          overflow: 'hidden',
+        }}>
+          {filtered.map((wf, idx) => {
+            const status = statusConfig[wf.status] || statusConfig[0];
+            const nodeCount = getNodeCount(wf);
+            const isActive = wf.status === 1;
+            return (
+              <div
+                key={wf.id}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '14px 18px',
+                  background: 'var(--ce-bg-card, #fff)',
+                  borderBottom: idx < filtered.length - 1 ? '1px solid var(--ce-border-light, #E8E8ED)' : 'none',
+                  cursor: 'pointer',
+                  transition: 'background 0.08s',
+                  borderLeft: `3px solid ${isActive ? '#30D158' : '#8E8E93'}`,
+                }}
+                onClick={() => navigate(`/workflows/${wf.id}`)}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--ce-bg-inset, #F5F5F7)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--ce-bg-card, #fff)'; }}
+              >
+                {/* Status dot */}
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: status.color, flexShrink: 0,
+                }} />
+                {/* Name + desc */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--ce-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {wf.name}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {wf.description || 'No description'}
+                  </div>
+                </div>
+                {/* Status label */}
+                <span style={{ fontSize: 11, fontWeight: 600, color: status.color, textTransform: 'uppercase', letterSpacing: 0.3, flexShrink: 0 }}>
+                  {status.label}
+                </span>
+                {/* Node count */}
+                {nodeCount !== null && (
+                  <span style={{ fontSize: 11, color: 'var(--ce-text-muted)', flexShrink: 0, fontFamily: 'var(--ce-mono)' }}>
+                    {nodeCount} nodes
+                  </span>
+                )}
+                {/* Version */}
+                <span style={{ fontSize: 11, color: 'var(--ce-text-muted)', fontFamily: 'var(--ce-mono)', flexShrink: 0 }}>
+                  v{wf.version}
+                </span>
+                {/* Last edited */}
+                <span style={{ fontSize: 11, color: 'var(--ce-text-muted)', flexShrink: 0, minWidth: 80, textAlign: 'right' }}>
+                  {wf.lastModificationTime ? dayjs(wf.lastModificationTime).fromNow() : dayjs(wf.creationTime).fromNow()}
+                </span>
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                  <Tooltip title="Duplicate"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => handleDuplicate(wf.id)} style={{ color: 'var(--ce-text-muted)' }} /></Tooltip>
+                  <Tooltip title={isActive ? 'Deactivate' : 'Activate'}>
+                    <Button type="text" size="small" icon={isActive ? <PauseCircleOutlined /> : <PlayCircleOutlined />} onClick={() => handleToggleActive(wf)} style={{ color: isActive ? '#FF9F0A' : '#30D158' }} />
+                  </Tooltip>
+                  <Popconfirm title="Delete?" onConfirm={() => handleDelete(wf.id)} okButtonProps={{ danger: true }}>
+                    <Tooltip title="Delete"><Button type="text" size="small" icon={<DeleteOutlined />} danger /></Tooltip>
+                  </Popconfirm>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        ) : (
+        /* ─── Grid View ─── */
         <div
           className="ce-stagger-2"
           style={{
@@ -363,6 +464,7 @@ export default function WorkflowsPage() {
             );
           })}
         </div>
+        )
       )}
     </div>
   );
