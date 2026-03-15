@@ -70,60 +70,78 @@ function AppearanceTab() {
 
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', marginBottom: 16 }}>
-        Choose a preset or pick any custom color for the entire application.
+      {/* Presets — full-width grid */}
+      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 12 }}>
+        Theme Presets
       </div>
-
-      {/* Presets */}
-      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 10 }}>
-        Presets
-      </div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+        gap: 10,
+        marginBottom: 28,
+      }}>
         {colorThemes.map((theme) => {
           const isActive = activeTheme === theme.key;
           return (
             <div
               key={theme.key}
               onClick={() => handleSelect(theme.key)}
-              title={theme.name}
               style={{
-                width: 40, height: 40, borderRadius: 10, cursor: 'pointer',
-                background: theme.accent,
-                border: isActive ? '3px solid var(--ce-text)' : '2px solid transparent',
-                outline: isActive ? `2px solid ${theme.accent}` : 'none',
-                outlineOffset: 2,
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px',
+                borderRadius: 'var(--ce-radius)',
+                border: isActive ? `2px solid ${theme.accent}` : '1px solid var(--ce-border-light)',
+                cursor: 'pointer',
+                background: 'var(--ce-bg-card)',
                 transition: 'all 0.12s',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.borderColor = 'var(--ce-border)'; }}
+              onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.borderColor = isActive ? theme.accent : 'var(--ce-border-light)'; }}
             >
-              {isActive && (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8.5L6.5 12L13 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
+              <div style={{
+                width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                background: theme.accent,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {isActive && (
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8.5L6.5 12L13 4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: isActive ? 600 : 500, color: 'var(--ce-text)' }}>
+                  {theme.name}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--ce-text-muted)', fontFamily: 'var(--ce-mono)' }}>
+                  {theme.accent}
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Custom color */}
-      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 10 }}>
+      {/* Custom color — full width section */}
+      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 12 }}>
         Custom Color
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ position: 'relative' }}>
-          <input
-            type="color"
-            value={customColor}
-            onChange={(e) => handleCustomColor(e.target.value)}
-            style={{
-              width: 40, height: 40, border: 'none', padding: 0, cursor: 'pointer',
-              borderRadius: 10, overflow: 'hidden', background: 'transparent',
-            }}
-          />
-        </div>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '14px 16px',
+        borderRadius: 'var(--ce-radius)',
+        border: activeTheme === 'custom' ? `2px solid ${customColor}` : '1px solid var(--ce-border-light)',
+        background: 'var(--ce-bg-card)',
+      }}>
+        <input
+          type="color"
+          value={customColor}
+          onChange={(e) => handleCustomColor(e.target.value)}
+          style={{
+            width: 36, height: 36, border: 'none', padding: 0, cursor: 'pointer',
+            borderRadius: 8, overflow: 'hidden', background: 'transparent',
+          }}
+        />
         <Input
           value={customColor}
           onChange={(e) => {
@@ -131,12 +149,23 @@ function AppearanceTab() {
             setCustomColor(v);
             if (/^#[0-9A-Fa-f]{6}$/.test(v)) handleCustomColor(v);
           }}
-          style={{ width: 120, fontFamily: 'var(--ce-mono)', fontSize: 12 }}
+          style={{ width: 130, fontFamily: 'var(--ce-mono)', fontSize: 12 }}
           placeholder="#6366F1"
         />
-        <span style={{ fontSize: 12, color: 'var(--ce-text-muted)' }}>
-          {activeTheme === 'custom' ? 'Active' : 'Pick any color'}
-        </span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ce-text)' }}>
+            {activeTheme === 'custom' ? 'Custom theme active' : 'Pick any color'}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--ce-text-muted)' }}>
+            Use the color picker or enter a hex code
+          </div>
+        </div>
+        {activeTheme === 'custom' && (
+          <div style={{
+            width: 48, height: 24, borderRadius: 12,
+            background: customColor, opacity: 0.8,
+          }} />
+        )}
       </div>
     </div>
   );
@@ -174,103 +203,143 @@ function BrandingTab() {
 
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', marginBottom: 20 }}>
-        Customize the application branding for white-label deployments.
-      </div>
-      <div style={{ maxWidth: 500 }}>
-        <Form layout="vertical">
-          <div style={{ display: 'flex', gap: 16 }}>
-            <Form.Item label="App Name" style={{ flex: 1 }}>
-              <Input
-                value={config.appName}
-                onChange={(e) => setConfig((p) => ({ ...p, appName: e.target.value }))}
-                placeholder="CoreEngine"
-              />
-            </Form.Item>
-            <Form.Item label="Logo Text" style={{ width: 100 }}>
-              <Input
-                value={config.logoText}
-                onChange={(e) => setConfig((p) => ({ ...p, logoText: e.target.value.slice(0, 3) }))}
-                placeholder="CE"
-                maxLength={3}
-              />
-            </Form.Item>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+        {/* Left: Form */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 14 }}>
+            Brand Identity
           </div>
-          <Form.Item label="Tagline">
-            <Input
-              value={config.tagline}
-              onChange={(e) => setConfig((p) => ({ ...p, tagline: e.target.value }))}
-              placeholder="Enterprise Platform"
-            />
-          </Form.Item>
-          <Form.Item label="Logo Image (optional)">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {config.logoUrl ? (
-                <div style={{
-                  width: 48, height: 48, borderRadius: 10, overflow: 'hidden',
-                  border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-inset)',
-                }}>
-                  <img src={config.logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                </div>
-              ) : (
-                <div style={{
-                  width: 48, height: 48, borderRadius: 10,
-                  border: '1px dashed var(--ce-border)', background: 'var(--ce-bg-inset)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--ce-text-muted)', fontSize: 11,
-                }}>
-                  None
-                </div>
-              )}
-              <Upload beforeUpload={handleLogoUpload} showUploadList={false} accept="image/*">
-                <Button size="small" icon={<UploadOutlined />}>Upload</Button>
-              </Upload>
-              {config.logoUrl && (
-                <Button size="small" danger onClick={() => setConfig((p) => ({ ...p, logoUrl: undefined }))}>
-                  Remove
-                </Button>
-              )}
+          <Form layout="vertical">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 16 }}>
+              <Form.Item label="App Name" style={{ marginBottom: 16 }}>
+                <Input
+                  value={config.appName}
+                  onChange={(e) => setConfig((p) => ({ ...p, appName: e.target.value }))}
+                  placeholder="CoreEngine"
+                />
+              </Form.Item>
+              <Form.Item label="Logo Text" style={{ marginBottom: 16 }}>
+                <Input
+                  value={config.logoText}
+                  onChange={(e) => setConfig((p) => ({ ...p, logoText: e.target.value.slice(0, 3) }))}
+                  placeholder="CE"
+                  maxLength={3}
+                />
+              </Form.Item>
             </div>
-          </Form.Item>
-          <Form.Item label="Favicon URL (optional)">
-            <Input
-              value={config.faviconUrl || ''}
-              onChange={(e) => setConfig((p) => ({ ...p, faviconUrl: e.target.value || undefined }))}
-              placeholder="https://example.com/favicon.ico"
-            />
-          </Form.Item>
-        </Form>
-        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-          <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
-            Save Branding
-          </Button>
-          <Button onClick={handleReset}>Reset to Defaults</Button>
+            <Form.Item label="Tagline" style={{ marginBottom: 16 }}>
+              <Input
+                value={config.tagline}
+                onChange={(e) => setConfig((p) => ({ ...p, tagline: e.target.value }))}
+                placeholder="Enterprise Platform"
+              />
+            </Form.Item>
+            <Form.Item label="Logo Image (optional)" style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {config.logoUrl ? (
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 10, overflow: 'hidden',
+                    border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-inset)',
+                  }}>
+                    <img src={config.logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  </div>
+                ) : (
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 10,
+                    border: '1px dashed var(--ce-border)', background: 'var(--ce-bg-inset)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--ce-text-muted)', fontSize: 11,
+                  }}>
+                    None
+                  </div>
+                )}
+                <Upload beforeUpload={handleLogoUpload} showUploadList={false} accept="image/*">
+                  <Button size="small" icon={<UploadOutlined />}>Upload</Button>
+                </Upload>
+                {config.logoUrl && (
+                  <Button size="small" danger onClick={() => setConfig((p) => ({ ...p, logoUrl: undefined }))}>
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </Form.Item>
+            <Form.Item label="Favicon URL (optional)" style={{ marginBottom: 16 }}>
+              <Input
+                value={config.faviconUrl || ''}
+                onChange={(e) => setConfig((p) => ({ ...p, faviconUrl: e.target.value || undefined }))}
+                placeholder="https://example.com/favicon.ico"
+              />
+            </Form.Item>
+          </Form>
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
+              Save Branding
+            </Button>
+            <Button onClick={handleReset}>Reset to Defaults</Button>
+          </div>
         </div>
 
-        {/* Preview */}
+        {/* Right: Live Preview */}
         <div style={{
-          marginTop: 24, padding: 16, borderRadius: 'var(--ce-radius)',
+          padding: 20, borderRadius: 'var(--ce-radius)',
           border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-inset)',
+          position: 'sticky', top: 80,
         }}>
-          <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 12 }}>
-            Preview
+          <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 16 }}>
+            Live Preview
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#1B1B1F', padding: '10px 14px', borderRadius: 'var(--ce-radius-sm)' }}>
-            {config.logoUrl ? (
-              <img src={config.logoUrl} alt="" style={{ width: 28, height: 28, borderRadius: 6 }} />
-            ) : (
+          {/* Sidebar preview */}
+          <div style={{ background: '#1D1D1F', borderRadius: 'var(--ce-radius-sm)', padding: '14px 16px', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {config.logoUrl ? (
+                <img src={config.logoUrl} alt="" style={{ width: 32, height: 32, borderRadius: 8 }} />
+              ) : (
+                <div style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  background: 'linear-gradient(135deg, var(--ce-accent), var(--ce-accent-hover))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontSize: 12, fontWeight: 800,
+                }}>
+                  {config.logoText}
+                </div>
+              )}
+              <div>
+                <div style={{ color: '#fff', fontSize: 14, fontWeight: 700, lineHeight: 1.2 }}>{config.appName}</div>
+                <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>{config.tagline}</div>
+              </div>
+            </div>
+            {/* Fake nav items */}
+            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {['Dashboard', 'Users', 'Settings'].map((item, i) => (
+                <div key={item} style={{
+                  padding: '6px 10px', borderRadius: 6, fontSize: 12,
+                  color: i === 0 ? '#fff' : 'rgba(255,255,255,0.45)',
+                  background: i === 0 ? 'rgba(var(--ce-accent), 0.1)' : 'transparent',
+                  fontWeight: i === 0 ? 600 : 400,
+                  borderLeft: i === 0 ? '2px solid var(--ce-accent)' : '2px solid transparent',
+                }}>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Header preview */}
+          <div style={{
+            background: 'var(--ce-bg-card)', border: '1px solid var(--ce-border-light)',
+            borderRadius: 'var(--ce-radius-sm)', padding: '8px 12px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span style={{ fontSize: 12, color: 'var(--ce-text-muted)' }}>Overview</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: 6,
+                width: 22, height: 22, borderRadius: 6,
                 background: 'linear-gradient(135deg, var(--ce-accent), var(--ce-accent-hover))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 11, fontWeight: 800,
+                color: '#fff', fontSize: 9, fontWeight: 700,
               }}>
-                {config.logoText}
+                {config.logoText.charAt(0)}
               </div>
-            )}
-            <div>
-              <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{config.appName}</div>
-              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5 }}>{config.tagline}</div>
+              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--ce-text-secondary)' }}>Admin</span>
             </div>
           </div>
         </div>
