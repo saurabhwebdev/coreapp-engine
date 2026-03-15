@@ -25,6 +25,7 @@ import SettingsPage from './pages/settings';
 import ProfilePage from './pages/profile';
 import NotFound from './pages/error/NotFound';
 import ErrorPage from './pages/error/ErrorPage';
+import EmptyState from './components/EmptyState';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -96,13 +97,16 @@ export default function App() {
   return (
     <AuthProvider {...oidcConfig}>
       <QueryClientProvider client={queryClient}>
-        <ConfigProvider theme={{
-          ...(isDark ? darkTheme : lightTheme),
-          token: {
-            ...(isDark ? darkTheme : lightTheme).token,
-            ...getAntTokensForTheme(isDark),
-          },
-        }}>
+        <ConfigProvider
+          theme={{
+            ...(isDark ? darkTheme : lightTheme),
+            token: {
+              ...(isDark ? darkTheme : lightTheme).token,
+              ...getAntTokensForTheme(isDark),
+            },
+          }}
+          renderEmpty={() => <EmptyState compact title="No data" description="Nothing to display." />}
+        >
           <AntApp>
             <BrowserRouter>
               <Routes>
