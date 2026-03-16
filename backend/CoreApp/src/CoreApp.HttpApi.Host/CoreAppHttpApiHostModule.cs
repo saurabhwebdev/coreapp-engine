@@ -72,6 +72,17 @@ public class CoreAppHttpApiHostModule : AbpModule
             });
         });
 
+        if (hostingEnvironment.IsDevelopment())
+        {
+            PreConfigure<OpenIddictBuilder>(builder =>
+            {
+                builder.AddServer(options =>
+                {
+                    options.UseAspNetCore().DisableTransportSecurityRequirement();
+                });
+            });
+        }
+
         if (!hostingEnvironment.IsDevelopment())
         {
             PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
