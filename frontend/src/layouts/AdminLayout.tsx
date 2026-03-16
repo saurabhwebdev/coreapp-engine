@@ -62,6 +62,7 @@ const allNavSections: { title: string; items: NavItem[] }[] = [
     title: 'System',
     items: [
       { key: '/workflows', icon: <BranchesOutlined />, label: 'Workflows', subtitle: 'Visual automation builder', section: 'System', feature: 'CoreApp.WorkflowModule' },
+      { key: '/elsa-studio', icon: <BranchesOutlined />, label: 'Elsa Studio', subtitle: 'Workflow execution engine', section: 'System', feature: 'CoreApp.WorkflowModule' },
       { key: '/files', icon: <FileOutlined />, label: 'Files', subtitle: 'Manage documents & folders', section: 'System', feature: 'CoreApp.FileManagementModule' },
       { key: '/notifications', icon: <BellOutlined />, label: 'Notifications', subtitle: 'Stay informed', section: 'System', feature: 'CoreApp.NotificationModule' },
       { key: '/chat', icon: <MessageOutlined />, label: 'Chat', subtitle: 'Real-time messaging', section: 'System', feature: 'CoreApp.ChatModule' },

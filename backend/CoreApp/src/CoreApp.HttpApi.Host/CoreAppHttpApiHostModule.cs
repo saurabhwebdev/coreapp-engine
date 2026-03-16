@@ -42,6 +42,10 @@ using Volo.Abp.Security.Claims;
 using CoreApp.Hubs;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
+using Elsa.EntityFrameworkCore.Extensions;
+using Elsa.EntityFrameworkCore.Modules.Management;
+using Elsa.EntityFrameworkCore.Modules.Runtime;
+using Elsa.Extensions;
 
 namespace CoreApp;
 
@@ -127,6 +131,49 @@ public class CoreAppHttpApiHostModule : AbpModule
         ConfigureCors(context, configuration);
 
         context.Services.AddSignalR();
+
+        // ─── Elsa Workflows Engine ───
+        var elsaConnectionString = configuration.GetConnectionString("Default")!;
+        context.Services.AddElsa(elsa =>
+        {
+            elsa.UseWorkflowManagement(management =>
+            {
+                management.UseEntityFrameworkCore(ef =>
+                {
+                    ef.UseSqlServer(elsaConnectionString);
+                    ef.RunMigrations = true;
+                });
+            });
+            elsa.UseWorkflowRuntime(runtime =>
+            {
+                runtime.UseEntityFrameworkCore(ef =>
+                {
+                    ef.UseSqlServer(elsaConnectionString);
+                    ef.RunMigrations = true;
+                });
+            });
+            elsa.UseIdentity(identity =>
+            {
+                identity.TokenOptions = options => options.SigningKey = "sufficiently-large-secret-signing-key-for-jwt-tokens-1234567890";
+                identity.UseAdminUserProvider();
+            });
+            elsa.UseDefaultAuthentication();
+            elsa.UseWorkflowsApi();
+            elsa.UseHttp(http => http.ConfigureHttpOptions = options =>
+            {
+                options.BaseUrl = new Uri(configuration["App:SelfUrl"] ?? "https://localhost:44305");
+                options.BasePath = "/elsa/api/workflows";
+            });
+            elsa.UseScheduling();
+            elsa.AddActivitiesFrom<CoreAppHttpApiHostModule>();
+            elsa.AddWorkflowsFrom<CoreAppHttpApiHostModule>();
+        });
+
+        // Suppress Elsa multitenancy shutdown errors (non-critical NullRef in BookmarkQueueWorker.Stop)
+        context.Services.Configure<Microsoft.Extensions.Hosting.HostOptions>(options =>
+        {
+            options.BackgroundServiceExceptionBehavior = Microsoft.Extensions.Hosting.BackgroundServiceExceptionBehavior.Ignore;
+        });
 
         Configure<AbpBlobStoringOptions>(options =>
         {
@@ -310,6 +357,8 @@ public class CoreAppHttpApiHostModule : AbpModule
         });
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
+        app.UseWorkflowsApi();
+        app.UseWorkflows();
         app.UseConfiguredEndpoints(endpoints =>
         {
             endpoints.MapHub<NotificationHub>("/signalr/notifications");

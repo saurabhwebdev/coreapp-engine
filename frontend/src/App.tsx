@@ -22,6 +22,7 @@ import ChatPage from './pages/chat';
 import FormsPage from './pages/forms';
 import ReportsPage from './pages/reports';
 import HealthPage from './pages/health';
+import ElsaStudioPage from './pages/elsa-studio';
 import SettingsPage from './pages/settings';
 import ProfilePage from './pages/profile';
 import NotFound from './pages/error/NotFound';
@@ -135,6 +136,7 @@ export default function App() {
                   <Route path="notifications" element={<NotificationsPage />} />
                   <Route path="workflows" element={<WorkflowsPage />} />
                   <Route path="workflows/:id" element={<WorkflowEditor />} />
+                  <Route path="elsa-studio" element={<ElsaStudioPage />} />
                   <Route path="files" element={<FilesPage />} />
                   <Route path="chat" element={<ChatPage />} />
                   <Route path="forms" element={<FormsPage />} />
