@@ -1,1 +1,21 @@
-{}
+{
+  "name": "coreapp-engine",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend/CoreApp/src/CoreApp.HttpApi.Host && dotnet run",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:backend": "cd backend/CoreApp && dotnet build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "migrate": "cd backend/CoreApp/src/CoreApp.DbMigrator && dotnet run"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saurabhwebdev/coreapp-engine.git"
+  }
+}
