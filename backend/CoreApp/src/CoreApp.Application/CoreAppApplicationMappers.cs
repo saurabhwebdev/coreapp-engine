@@ -1,15 +1,13 @@
-using Riok.Mapperly.Abstractions;
-using Volo.Abp.Mapperly;
+using AutoMapper;
 
 namespace CoreApp;
 
-/*
- * You can add your own mappings here.
- * [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
- * public partial class CoreAppApplicationMappers : MapperBase<BookDto, CreateUpdateBookDto>
- * {
- *    public override partial CreateUpdateBookDto Map(BookDto source);
- * 
- *    public override partial void Map(BookDto source, CreateUpdateBookDto destination);
- * }
- */
+public class CoreAppApplicationAutoMapperProfile : Profile
+{
+    public CoreAppApplicationAutoMapperProfile()
+    {
+        /* You can configure your AutoMapper mapping configuration here.
+         * Alternatively, you can split your mapping configurations
+         * into multiple profile classes for a better organization. */
+    }
+}

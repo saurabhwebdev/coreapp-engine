@@ -29,7 +29,7 @@ public class Program
                     loggerConfiguration
                         .ReadFrom.Configuration(context.Configuration)
                         .ReadFrom.Services(services)
-                        .WriteTo.Async(c => c.AbpStudio(services));
+                        .WriteTo.Async(c => c.Console());
                 });
             await builder.AddApplicationAsync<CoreAppHttpApiHostModule>();
             var app = builder.Build();

@@ -16,9 +16,8 @@ using OpenIddict.Server.AspNetCore;
 using CoreApp.EntityFrameworkCore;
 using CoreApp.MultiTenancy;
 using CoreApp.HealthChecks;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Volo.Abp;
-using Volo.Abp.Studio;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
@@ -37,7 +36,6 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Identity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Swashbuckle;
-using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Security.Claims;
 using CoreApp.Hubs;
 using Volo.Abp.BlobStoring;
@@ -47,7 +45,6 @@ namespace CoreApp;
 
 [DependsOn(
     typeof(CoreAppHttpApiModule),
-    typeof(AbpStudioClientAspNetCoreModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
@@ -111,12 +108,11 @@ public class CoreAppHttpApiHostModule : AbpModule
             Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
-                options.KnownIPNetworks.Clear();
+                options.KnownNetworks.Clear();
                 options.KnownProxies.Clear();
             });
         }
 
-        ConfigureStudio(hostingEnvironment);
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);
         ConfigureBundles(hostingEnvironment);
@@ -140,17 +136,6 @@ public class CoreAppHttpApiHostModule : AbpModule
                 });
             });
         });
-    }
-
-    private void ConfigureStudio(IHostEnvironment hostingEnvironment)
-    {
-        if (hostingEnvironment.IsProduction())
-        {
-            Configure<AbpStudioClientOptions>(options =>
-            {
-                options.IsLinkEnabled = false;
-            });
-        }
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)
@@ -285,8 +270,7 @@ public class CoreAppHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
-        app.MapAbpStaticAssets();
-        app.UseAbpStudioLink();
+        app.UseStaticFiles();
         app.UseAbpSecurityHeaders();
         app.UseCors();
         app.UseAuthentication();

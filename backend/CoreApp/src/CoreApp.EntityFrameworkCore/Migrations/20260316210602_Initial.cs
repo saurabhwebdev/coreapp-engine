@@ -6,26 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CoreApp.Migrations
 {
     /// <inheritdoc />
-    public partial class AddNotificationsAndFileManagement : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "AbpAuditLogExcelFiles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    FileName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpAuditLogExcelFiles", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "AbpAuditLogs",
                 columns: table => new
@@ -65,7 +50,6 @@ namespace CoreApp.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ApplicationName = table.Column<string>(type: "nvarchar(96)", maxLength: 96, nullable: true),
                     JobName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     JobArgs = table.Column<string>(type: "nvarchar(max)", maxLength: 1048576, nullable: false),
                     TryCount = table.Column<short>(type: "smallint", nullable: false, defaultValue: (short)0),
@@ -109,7 +93,6 @@ namespace CoreApp.Migrations
                     RegexDescription = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     ValueType = table.Column<int>(type: "int", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false)
                 },
@@ -248,10 +231,8 @@ namespace CoreApp.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GroupName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    GroupName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ResourceName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ManagementPermissionName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     ParentName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     DisplayName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     IsEnabled = table.Column<bool>(type: "bit", nullable: false),
@@ -266,23 +247,6 @@ namespace CoreApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AbpResourcePermissionGrants",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderName = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    ResourceName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    ResourceKey = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpResourcePermissionGrants", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AbpRoles",
                 columns: table => new
                 {
@@ -294,7 +258,6 @@ namespace CoreApp.Migrations
                     IsStatic = table.Column<bool>(type: "bit", nullable: false),
                     IsPublic = table.Column<bool>(type: "bit", nullable: false),
                     EntityVersion = table.Column<int>(type: "int", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false)
                 },
@@ -335,14 +298,13 @@ namespace CoreApp.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SessionId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     Device = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    DeviceInfo = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    DeviceInfo = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClientId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    IpAddresses = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: true),
+                    IpAddresses = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     SignedIn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastAccessed = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    LastAccessed = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -449,7 +411,6 @@ namespace CoreApp.Migrations
                     ShouldChangePasswordOnNextLogin = table.Column<bool>(type: "bit", nullable: false),
                     EntityVersion = table.Column<int>(type: "int", nullable: false),
                     LastPasswordChangeTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LastSignInTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -463,6 +424,25 @@ namespace CoreApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AbpUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppChatMessages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReceiverId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", maxLength: 4096, nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    ReadTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppChatMessages", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -493,6 +473,48 @@ namespace CoreApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppFormDefinitions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: true),
+                    FieldsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsPublished = table.Column<bool>(type: "bit", nullable: false),
+                    SubmissionCount = table.Column<int>(type: "int", nullable: false),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppFormDefinitions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppFormSubmissions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    FormId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DataJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppFormSubmissions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AppNotifications",
                 columns: table => new
                 {
@@ -515,6 +537,33 @@ namespace CoreApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppReportDefinitions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    ConfigJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastRunResult = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastRunTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppReportDefinitions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AppUserNotifications",
                 columns: table => new
                 {
@@ -530,6 +579,34 @@ namespace CoreApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AppUserNotifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppWorkflowDefinitions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    TriggerType = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    NodesJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EdgesJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppWorkflowDefinitions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -551,7 +628,6 @@ namespace CoreApp.Migrations
                     RedirectUris = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Requirements = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Settings = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FrontChannelLogoutUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClientUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LogoUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -806,46 +882,6 @@ namespace CoreApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AbpUserPasskeys",
-                columns: table => new
-                {
-                    CredentialId = table.Column<byte[]>(type: "varbinary(1024)", maxLength: 1024, nullable: false),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Data = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpUserPasskeys", x => x.CredentialId);
-                    table.ForeignKey(
-                        name: "FK_AbpUserPasskeys_AbpUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AbpUserPasswordHistories",
-                columns: table => new
-                {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpUserPasswordHistories", x => new { x.UserId, x.Password });
-                    table.ForeignKey(
-                        name: "FK_AbpUserPasswordHistories_AbpUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AbpUserRoles",
                 columns: table => new
                 {
@@ -904,7 +940,14 @@ namespace CoreApp.Migrations
                     Subject = table.Column<string>(type: "nvarchar(400)", maxLength: 400, nullable: true),
                     Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false)
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -954,9 +997,16 @@ namespace CoreApp.Migrations
                     ReferenceId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Subject = table.Column<string>(type: "nvarchar(400)", maxLength: 400, nullable: true),
-                    Type = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false)
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1093,18 +1143,10 @@ namespace CoreApp.Migrations
                 column: "GroupName");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AbpPermissions_ResourceName_Name",
+                name: "IX_AbpPermissions_Name",
                 table: "AbpPermissions",
-                columns: new[] { "ResourceName", "Name" },
-                unique: true,
-                filter: "[ResourceName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AbpResourcePermissionGrants_TenantId_Name_ResourceName_ResourceKey_ProviderName_ProviderKey",
-                table: "AbpResourcePermissionGrants",
-                columns: new[] { "TenantId", "Name", "ResourceName", "ResourceKey", "ProviderName", "ProviderKey" },
-                unique: true,
-                filter: "[TenantId] IS NOT NULL");
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AbpRoleClaims_RoleId",
@@ -1190,11 +1232,6 @@ namespace CoreApp.Migrations
                 columns: new[] { "UserId", "OrganizationUnitId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AbpUserPasskeys_UserId",
-                table: "AbpUserPasskeys",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AbpUserRoles_RoleId_UserId",
                 table: "AbpUserRoles",
                 columns: new[] { "RoleId", "UserId" });
@@ -1220,14 +1257,59 @@ namespace CoreApp.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppChatMessages_CreationTime",
+                table: "AppChatMessages",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppChatMessages_ReceiverId",
+                table: "AppChatMessages",
+                column: "ReceiverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppChatMessages_SenderId_ReceiverId",
+                table: "AppChatMessages",
+                columns: new[] { "SenderId", "ReceiverId" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AppFileDescriptors_ParentId",
                 table: "AppFileDescriptors",
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppFormDefinitions_IsPublished",
+                table: "AppFormDefinitions",
+                column: "IsPublished");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppFormDefinitions_Name",
+                table: "AppFormDefinitions",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppFormSubmissions_CreationTime",
+                table: "AppFormSubmissions",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppFormSubmissions_FormId",
+                table: "AppFormSubmissions",
+                column: "FormId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AppNotifications_CreationTime",
                 table: "AppNotifications",
                 column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppReportDefinitions_Category",
+                table: "AppReportDefinitions",
+                column: "Category");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppReportDefinitions_Name",
+                table: "AppReportDefinitions",
+                column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppUserNotifications_NotificationId",
@@ -1238,6 +1320,16 @@ namespace CoreApp.Migrations
                 name: "IX_AppUserNotifications_UserId_State",
                 table: "AppUserNotifications",
                 columns: new[] { "UserId", "State" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkflowDefinitions_Name",
+                table: "AppWorkflowDefinitions",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkflowDefinitions_Status",
+                table: "AppWorkflowDefinitions",
+                column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -1277,9 +1369,6 @@ namespace CoreApp.Migrations
                 name: "AbpAuditLogActions");
 
             migrationBuilder.DropTable(
-                name: "AbpAuditLogExcelFiles");
-
-            migrationBuilder.DropTable(
                 name: "AbpBackgroundJobs");
 
             migrationBuilder.DropTable(
@@ -1316,9 +1405,6 @@ namespace CoreApp.Migrations
                 name: "AbpPermissions");
 
             migrationBuilder.DropTable(
-                name: "AbpResourcePermissionGrants");
-
-            migrationBuilder.DropTable(
                 name: "AbpRoleClaims");
 
             migrationBuilder.DropTable(
@@ -1349,25 +1435,34 @@ namespace CoreApp.Migrations
                 name: "AbpUserOrganizationUnits");
 
             migrationBuilder.DropTable(
-                name: "AbpUserPasskeys");
-
-            migrationBuilder.DropTable(
-                name: "AbpUserPasswordHistories");
-
-            migrationBuilder.DropTable(
                 name: "AbpUserRoles");
 
             migrationBuilder.DropTable(
                 name: "AbpUserTokens");
 
             migrationBuilder.DropTable(
+                name: "AppChatMessages");
+
+            migrationBuilder.DropTable(
                 name: "AppFileDescriptors");
+
+            migrationBuilder.DropTable(
+                name: "AppFormDefinitions");
+
+            migrationBuilder.DropTable(
+                name: "AppFormSubmissions");
 
             migrationBuilder.DropTable(
                 name: "AppNotifications");
 
             migrationBuilder.DropTable(
+                name: "AppReportDefinitions");
+
+            migrationBuilder.DropTable(
                 name: "AppUserNotifications");
+
+            migrationBuilder.DropTable(
+                name: "AppWorkflowDefinitions");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");

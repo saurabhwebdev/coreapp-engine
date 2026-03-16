@@ -3,7 +3,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <RootNamespace>CoreApp</RootNamespace>
@@ -13,40 +13,36 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'CoreApp.HttpApi.Host' " />
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.2" />
     <PackageReference Include="KubernetesClient" Version="18.0.5" />
     <PackageReference Include="IdentityModel" Version="7.0.0" />
-    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
-    <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.2" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.25" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
-    <PackageReference Include="Volo.Abp.BlobStoring.FileSystem" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.BlobStoring.FileSystem" Version="8.3.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="10.1.0" />
-    <PackageReference Include="Volo.Abp.Autofac" Version="10.1.0" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="10.1.0" />
-    <PackageReference Include="Volo.Abp.Swashbuckle" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.AspNetCore.MultiTenancy" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="8.3.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.Account.Web.OpenIddict" Version="10.1.0" />
+    <PackageReference Include="Volo.Abp.Account.Web.OpenIddict" Version="8.3.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite" Version="5.1.0" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite" Version="3.3.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CoreApp.Application\CoreApp.Application.csproj" />
     <ProjectReference Include="..\CoreApp.HttpApi\CoreApp.HttpApi.csproj" />
     <ProjectReference Include="..\CoreApp.EntityFrameworkCore\CoreApp.EntityFrameworkCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Volo.Abp.Studio.Client.AspNetCore" Version="2.2.1" />
   </ItemGroup>
 
   <ItemGroup>
