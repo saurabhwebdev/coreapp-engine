@@ -63,11 +63,11 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
     private async Task CreateApplicationsAsync()
     {
         var commonScopes = new List<string> {
-            OpenIddictConstants.Permissions.Scopes.Address,
-            OpenIddictConstants.Permissions.Scopes.Email,
-            OpenIddictConstants.Permissions.Scopes.Phone,
-            OpenIddictConstants.Permissions.Scopes.Profile,
-            OpenIddictConstants.Permissions.Scopes.Roles,
+            "address",
+            "email",
+            "phone",
+            "profile",
+            "roles",
             "CoreApp"
         };
 

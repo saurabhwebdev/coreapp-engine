@@ -3,7 +3,9 @@
     <LangVersion>latest</LangVersion>
     <Version>1.0.0</Version>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-	<AbpProjectType>app</AbpProjectType>
+    <AbpProjectType>app</AbpProjectType>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <Target Name="NoWarnOnRazorViewImportedTypeConflicts" BeforeTargets="RazorCoreCompile">
