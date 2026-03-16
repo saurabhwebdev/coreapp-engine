@@ -25,6 +25,8 @@ import {
   MoonOutlined,
   RightOutlined,
   SwapOutlined,
+  ApartmentOutlined,
+  TagOutlined,
 } from '@ant-design/icons';
 import { getUnreadCount } from '../services/notification';
 import { startConnection, onNotificationReceived } from '../services/signalr';
@@ -55,6 +57,8 @@ const allNavSections: { title: string; items: NavItem[] }[] = [
     items: [
       { key: '/identity/users', icon: <UserOutlined />, label: 'Users', subtitle: 'Manage user accounts', section: 'Identity' },
       { key: '/identity/roles', icon: <TeamOutlined />, label: 'Roles', subtitle: 'Configure roles & permissions', section: 'Identity' },
+      { key: '/identity/organization-units', icon: <ApartmentOutlined />, label: 'Organization Units', subtitle: 'Departments & hierarchy', section: 'Identity' },
+      { key: '/identity/claim-types', icon: <TagOutlined />, label: 'Claim Types', subtitle: 'Custom user claims', section: 'Identity' },
       { key: '/tenants', icon: <BankOutlined />, label: 'Tenants', subtitle: 'Multi-tenant management', section: 'Identity' },
     ],
   },

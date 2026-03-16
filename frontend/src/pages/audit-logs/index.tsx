@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Tag, DatePicker, Select, Input, Button, Space, Modal, Descriptions, Collapse } from 'antd';
+import { Tag, DatePicker, Select, Input, Button, Space, Modal, Descriptions, Collapse, Tabs } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import DataTable from '../../components/DataTable';
 import { getAuditLogs, getAuditLog, type AuditLogDto } from '../../services/audit-log';
+import { getSecurityLogs, type SecurityLogDto } from '../../services/securityLog';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -21,7 +22,39 @@ const getStatusColor = (code: number): string => {
   return '#C54B4B';
 };
 
-export default function AuditLogsPage() {
+const securityActionColors: Record<string, string> = {
+  LoginSucceeded: '#3D8B6E',
+  LoginFailed: '#C54B4B',
+  Logout: '#7A7D8E',
+  PasswordChanged: '#4A7FC1',
+  PasswordReset: '#D4973B',
+  TwoFactorEnabled: '#3D8B6E',
+  TwoFactorDisabled: '#D4973B',
+  ProfileChanged: '#4A7FC1',
+  LockoutEnabled: '#C54B4B',
+};
+
+const getSecurityActionColor = (action?: string): string => {
+  if (!action) return '#7A7D8E';
+  if (action in securityActionColors) return securityActionColors[action];
+  if (action.toLowerCase().includes('failed') || action.toLowerCase().includes('lockout')) return '#C54B4B';
+  if (action.toLowerCase().includes('succeeded') || action.toLowerCase().includes('enabled')) return '#3D8B6E';
+  return '#7A7D8E';
+};
+
+const securityActionOptions = [
+  'LoginSucceeded',
+  'LoginFailed',
+  'Logout',
+  'PasswordChanged',
+  'PasswordReset',
+  'TwoFactorEnabled',
+  'TwoFactorDisabled',
+  'ProfileChanged',
+  'LockoutEnabled',
+].map((a) => ({ label: a, value: a }));
+
+function AuditLogsTab() {
   const [logs, setLogs] = useState<AuditLogDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -66,9 +99,8 @@ export default function AuditLogsPage() {
   };
 
   return (
-    <div className="ce-page-enter">
+    <>
       <div
-        className="ce-stagger-2"
         style={{
           background: 'var(--ce-bg-card)',
           border: '1px solid var(--ce-border-light)',
@@ -109,81 +141,79 @@ export default function AuditLogsPage() {
         </Space>
       </div>
 
-      <div className="ce-stagger-3">
-        <DataTable
-          dataSource={logs}
-          rowKey="id"
-          loading={loading}
-          showSearch={false}
-          size="small"
-          pagination={{
-            current: page,
-            pageSize,
-            total: totalCount,
-            onChange: (p) => { setPage(p); loadLogs(p); },
-          }}
-          columns={[
-            {
-              title: 'Time',
-              dataIndex: 'executionTime',
-              key: 'time',
-              width: 170,
-              render: (v: string) => dayjs(v).format('YYYY-MM-DD HH:mm:ss'),
-            },
-            {
-              title: 'User',
-              dataIndex: 'userName',
-              key: 'user',
-              width: 120,
-              render: (v: string) => v || '-',
-            },
-            {
-              title: 'Method',
-              dataIndex: 'httpMethod',
-              key: 'method',
-              width: 80,
-              render: (v: string) =>
-                v ? <Tag color={httpMethodColors[v]}>{v}</Tag> : '-',
-            },
-            {
-              title: 'URL',
-              dataIndex: 'url',
-              key: 'url',
-              ellipsis: true,
-              render: (v: string) => <span className="ce-mono">{v}</span>,
-            },
-            {
-              title: 'Status',
-              dataIndex: 'httpStatusCode',
-              key: 'status',
-              width: 80,
-              render: (v: number) =>
-                v ? <Tag color={getStatusColor(v)}>{v}</Tag> : '-',
-            },
-            {
-              title: 'Duration',
-              dataIndex: 'executionDuration',
-              key: 'duration',
-              width: 90,
-              render: (v: number) => <span className="ce-mono">{v}ms</span>,
-            },
-            {
-              title: 'IP',
-              dataIndex: 'clientIpAddress',
-              key: 'ip',
-              width: 130,
-            },
-            {
-              title: '',
-              key: 'actions',
-              width: 50,
-              render: (_: unknown, r: AuditLogDto) => (
-                <Button size="small" icon={<EyeOutlined />} onClick={() => showDetail(r.id)} />
-              ),
-            },
-          ]}
-        />
-      </div>
+      <DataTable
+        dataSource={logs}
+        rowKey="id"
+        loading={loading}
+        showSearch={false}
+        size="small"
+        pagination={{
+          current: page,
+          pageSize,
+          total: totalCount,
+          onChange: (p) => { setPage(p); loadLogs(p); },
+        }}
+        columns={[
+          {
+            title: 'Time',
+            dataIndex: 'executionTime',
+            key: 'time',
+            width: 170,
+            render: (v: string) => dayjs(v).format('YYYY-MM-DD HH:mm:ss'),
+          },
+          {
+            title: 'User',
+            dataIndex: 'userName',
+            key: 'user',
+            width: 120,
+            render: (v: string) => v || '-',
+          },
+          {
+            title: 'Method',
+            dataIndex: 'httpMethod',
+            key: 'method',
+            width: 80,
+            render: (v: string) =>
+              v ? <Tag color={httpMethodColors[v]}>{v}</Tag> : '-',
+          },
+          {
+            title: 'URL',
+            dataIndex: 'url',
+            key: 'url',
+            ellipsis: true,
+            render: (v: string) => <span className="ce-mono">{v}</span>,
+          },
+          {
+            title: 'Status',
+            dataIndex: 'httpStatusCode',
+            key: 'status',
+            width: 80,
+            render: (v: number) =>
+              v ? <Tag color={getStatusColor(v)}>{v}</Tag> : '-',
+          },
+          {
+            title: 'Duration',
+            dataIndex: 'executionDuration',
+            key: 'duration',
+            width: 90,
+            render: (v: number) => <span className="ce-mono">{v}ms</span>,
+          },
+          {
+            title: 'IP',
+            dataIndex: 'clientIpAddress',
+            key: 'ip',
+            width: 130,
+          },
+          {
+            title: '',
+            key: 'actions',
+            width: 50,
+            render: (_: unknown, r: AuditLogDto) => (
+              <Button size="small" icon={<EyeOutlined />} onClick={() => showDetail(r.id)} />
+            ),
+          },
+        ]}
+      />
 
       <Modal
         title="Audit Log Detail"
@@ -274,6 +304,158 @@ export default function AuditLogsPage() {
           </>
         )}
       </Modal>
+    </>
+  );
+}
+
+function SecurityLogsTab() {
+  const [logs, setLogs] = useState<SecurityLogDto[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
+  // Filters
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
+  const [userName, setUserName] = useState('');
+  const [action, setAction] = useState<string | undefined>();
+
+  const loadLogs = async (p = page) => {
+    setLoading(true);
+    try {
+      const res = await getSecurityLogs({
+        skipCount: (p - 1) * pageSize,
+        maxResultCount: pageSize,
+        startTime: dateRange[0]?.toISOString(),
+        endTime: dateRange[1]?.toISOString(),
+        userName: userName || undefined,
+        action,
+        sorting: 'creationTime desc',
+      });
+      setLogs(res.data.items);
+      setTotalCount(res.data.totalCount);
+    } catch {}
+    setLoading(false);
+  };
+
+  useEffect(() => { loadLogs(); }, []);
+
+  return (
+    <>
+      <div
+        style={{
+          background: 'var(--ce-bg-card)',
+          border: '1px solid var(--ce-border-light)',
+          borderRadius: 'var(--ce-radius)',
+          padding: 16,
+          marginBottom: 16,
+        }}
+      >
+        <Space wrap>
+          <Input
+            placeholder="Username"
+            style={{ width: 150 }}
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+          />
+          <Select
+            placeholder="Action"
+            allowClear
+            style={{ width: 180 }}
+            onChange={setAction}
+            options={securityActionOptions}
+          />
+          <RangePicker onChange={(dates) => setDateRange(dates ? [dates[0], dates[1]] : [null, null])} />
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={() => { setPage(1); loadLogs(1); }}
+          >
+            Search
+          </Button>
+        </Space>
+      </div>
+
+      <DataTable
+        dataSource={logs}
+        rowKey="id"
+        loading={loading}
+        showSearch={false}
+        size="small"
+        pagination={{
+          current: page,
+          pageSize,
+          total: totalCount,
+          onChange: (p) => { setPage(p); loadLogs(p); },
+        }}
+        columns={[
+          {
+            title: 'Time',
+            dataIndex: 'creationTime',
+            key: 'time',
+            width: 170,
+            render: (v: string) => dayjs(v).format('YYYY-MM-DD HH:mm:ss'),
+          },
+          {
+            title: 'User',
+            dataIndex: 'userName',
+            key: 'user',
+            width: 130,
+            render: (v: string) => v || '-',
+          },
+          {
+            title: 'Action',
+            dataIndex: 'action',
+            key: 'action',
+            width: 160,
+            render: (v: string) =>
+              v ? <Tag color={getSecurityActionColor(v)}>{v}</Tag> : '-',
+          },
+          {
+            title: 'Identity',
+            dataIndex: 'identity',
+            key: 'identity',
+            width: 140,
+            render: (v: string) => v || '-',
+          },
+          {
+            title: 'IP Address',
+            dataIndex: 'clientIpAddress',
+            key: 'ip',
+            width: 130,
+            render: (v: string) => v || '-',
+          },
+          {
+            title: 'Browser',
+            dataIndex: 'browserInfo',
+            key: 'browser',
+            ellipsis: true,
+            render: (v: string) => v || '-',
+          },
+        ]}
+      />
+    </>
+  );
+}
+
+export default function AuditLogsPage() {
+  return (
+    <div className="ce-page-enter">
+      <Tabs
+        defaultActiveKey="audit"
+        items={[
+          {
+            key: 'audit',
+            label: 'Audit Logs',
+            children: <AuditLogsTab />,
+          },
+          {
+            key: 'security',
+            label: 'Security Logs',
+            children: <SecurityLogsTab />,
+          },
+        ]}
+      />
     </div>
   );
 }

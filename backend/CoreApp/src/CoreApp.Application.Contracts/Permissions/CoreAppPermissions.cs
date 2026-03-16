@@ -34,4 +34,20 @@ public static class CoreAppPermissions
         public const string Edit = Default + ".Edit";
         public const string Delete = Default + ".Delete";
     }
+
+    public static class OrganizationUnits
+    {
+        public const string Default = GroupName + ".OrganizationUnits";
+        public const string ManageOU = Default + ".ManageOU";
+        public const string ManageMembers = Default + ".ManageMembers";
+        public const string ManageRoles = Default + ".ManageRoles";
+    }
+
+    public static class ClaimTypes
+    {
+        public const string Default = GroupName + ".ClaimTypes";
+        public const string Create = Default + ".Create";
+        public const string Edit = Default + ".Edit";
+        public const string Delete = Default + ".Delete";
+    }
 }

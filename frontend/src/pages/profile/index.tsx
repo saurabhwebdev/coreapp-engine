@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Card, Button, Form, Input, message, Spin } from 'antd';
-import { SaveOutlined, EditOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Card, Button, Form, Input, message, Spin, Table, Modal, DatePicker, Select, Tag, Empty } from 'antd';
+import { SaveOutlined, EditOutlined, ReloadOutlined, PlusOutlined, DeleteOutlined, LinkOutlined, TeamOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import api from '../../services/api';
 import { avatarStyles, getAvatarConfig, saveAvatarConfig, generateAvatarDataUri } from '../../utils/avatar';
 
@@ -12,6 +13,28 @@ interface ProfileDto {
   phoneNumber?: string;
 }
 
+interface LinkUserDto {
+  id: string;
+  targetUserId: string;
+  targetUserName?: string;
+  targetTenantId?: string;
+}
+
+interface UserDelegationDto {
+  id: string;
+  sourceUserId: string;
+  sourceUserName?: string;
+  targetUserId: string;
+  targetUserName?: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface UserLookupDto {
+  id: string;
+  userName: string;
+}
+
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +44,20 @@ export default function ProfilePage() {
   const [profileForm] = Form.useForm();
   const [pwdForm] = Form.useForm();
 
-  useEffect(() => { loadProfile(); }, []);
+  // Link Users
+  const [linkedAccounts, setLinkedAccounts] = useState<LinkUserDto[]>([]);
+  const [linksLoading, setLinksLoading] = useState(false);
+
+  // Delegations
+  const [delegations, setDelegations] = useState<UserDelegationDto[]>([]);
+  const [delegationsLoading, setDelegationsLoading] = useState(false);
+  const [delegationModalOpen, setDelegationModalOpen] = useState(false);
+  const [delegationCreating, setDelegationCreating] = useState(false);
+  const [delegationForm] = Form.useForm();
+  const [userOptions, setUserOptions] = useState<UserLookupDto[]>([]);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
+
+  useEffect(() => { loadProfile(); loadLinkedAccounts(); loadDelegations(); }, []);
 
   const loadProfile = async () => {
     setLoading(true);
@@ -68,6 +104,92 @@ export default function ProfilePage() {
     }
   };
 
+  // --- Link Users ---
+  const loadLinkedAccounts = async () => {
+    setLinksLoading(true);
+    try {
+      const res = await api.get<{ items: LinkUserDto[] }>('/api/app/link-user/my-links');
+      setLinkedAccounts(res.data.items || []);
+    } catch {
+      // API may not be available yet — silently fail
+      setLinkedAccounts([]);
+    } finally {
+      setLinksLoading(false);
+    }
+  };
+
+  const handleDeleteLink = async (id: string) => {
+    try {
+      await api.delete(`/api/app/link-user/${id}`);
+      message.success('Linked account removed');
+      loadLinkedAccounts();
+    } catch (err: any) {
+      message.error(err.response?.data?.error?.message || 'Failed to remove link');
+    }
+  };
+
+  // --- Delegations ---
+  const loadDelegations = async () => {
+    setDelegationsLoading(true);
+    try {
+      const res = await api.get<{ items: UserDelegationDto[] }>('/api/app/user-delegation/my-delegations');
+      setDelegations(res.data.items || []);
+    } catch {
+      setDelegations([]);
+    } finally {
+      setDelegationsLoading(false);
+    }
+  };
+
+  const searchUsers = async (filter: string) => {
+    if (!filter || filter.length < 2) {
+      setUserOptions([]);
+      return;
+    }
+    setUserSearchLoading(true);
+    try {
+      const res = await api.get<{ items: UserLookupDto[] }>('/api/identity/users', {
+        params: { filter, maxResultCount: 10 },
+      });
+      setUserOptions(res.data.items || []);
+    } catch {
+      setUserOptions([]);
+    } finally {
+      setUserSearchLoading(false);
+    }
+  };
+
+  const handleCreateDelegation = async () => {
+    try {
+      const values = await delegationForm.validateFields();
+      setDelegationCreating(true);
+      await api.post('/api/app/user-delegation', {
+        targetUserId: values.targetUserId,
+        startTime: values.dateRange[0].toISOString(),
+        endTime: values.dateRange[1].toISOString(),
+      });
+      message.success('Delegation created');
+      setDelegationModalOpen(false);
+      delegationForm.resetFields();
+      setUserOptions([]);
+      loadDelegations();
+    } catch (err: any) {
+      message.error(err.response?.data?.error?.message || 'Failed to create delegation');
+    } finally {
+      setDelegationCreating(false);
+    }
+  };
+
+  const handleDeleteDelegation = async (id: string) => {
+    try {
+      await api.delete(`/api/app/user-delegation/${id}`);
+      message.success('Delegation removed');
+      loadDelegations();
+    } catch (err: any) {
+      message.error(err.response?.data?.error?.message || 'Failed to remove delegation');
+    }
+  };
+
   // Avatar
   const [avatarConfig, setAvatarConfig] = useState(getAvatarConfig);
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
@@ -97,6 +219,11 @@ export default function ProfilePage() {
     { label: 'Last Name', key: 'surname' },
     { label: 'Phone', key: 'phoneNumber' },
   ];
+
+  const isDelegationActive = (d: UserDelegationDto) => {
+    const now = new Date();
+    return new Date(d.startTime) <= now && new Date(d.endTime) >= now;
+  };
 
   return (
     <div className="ce-page-enter">
@@ -268,6 +395,196 @@ export default function ProfilePage() {
           </Form>
         </Card>
       </div>
+
+      {/* Linked Accounts */}
+      <div className="ce-stagger-4" style={{ marginTop: 20 }}>
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ce-text)' }}>
+              <LinkOutlined style={{ marginRight: 8 }} />
+              Linked Accounts
+            </span>
+          </div>
+          {linksLoading ? (
+            <div style={{ textAlign: 'center', padding: 24 }}><Spin /></div>
+          ) : linkedAccounts.length > 0 ? (
+            <Table
+              dataSource={linkedAccounts}
+              rowKey="id"
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: 'User',
+                  dataIndex: 'targetUserName',
+                  key: 'targetUserName',
+                },
+                {
+                  title: 'Tenant',
+                  dataIndex: 'targetTenantId',
+                  key: 'targetTenantId',
+                  render: (v: string | null) => v ? v.substring(0, 8) + '...' : <Tag>Current</Tag>,
+                },
+                {
+                  title: '',
+                  key: 'actions',
+                  width: 80,
+                  render: (_: any, record: LinkUserDto) => (
+                    <Button
+                      size="small"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDeleteLink(record.id)}
+                    />
+                  ),
+                },
+              ]}
+            />
+          ) : (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span style={{ color: 'var(--ce-text-muted)', fontSize: 13 }}>
+                  No linked accounts. Link Users allows you to connect multiple accounts across
+                  tenants so you can switch between them seamlessly. Linked accounts are typically
+                  created via the account linking flow.
+                </span>
+              }
+            />
+          )}
+        </Card>
+      </div>
+
+      {/* User Delegations */}
+      <div className="ce-stagger-5" style={{ marginTop: 20 }}>
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ce-text)' }}>
+              <TeamOutlined style={{ marginRight: 8 }} />
+              User Delegations
+            </span>
+            <Button
+              size="small"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setDelegationModalOpen(true)}
+            >
+              New Delegation
+            </Button>
+          </div>
+          {delegationsLoading ? (
+            <div style={{ textAlign: 'center', padding: 24 }}><Spin /></div>
+          ) : delegations.length > 0 ? (
+            <Table
+              dataSource={delegations}
+              rowKey="id"
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: 'Delegated To',
+                  dataIndex: 'targetUserName',
+                  key: 'targetUserName',
+                  render: (v: string) => v || '-',
+                },
+                {
+                  title: 'From',
+                  dataIndex: 'sourceUserName',
+                  key: 'sourceUserName',
+                  render: (v: string) => v || '-',
+                },
+                {
+                  title: 'Start',
+                  dataIndex: 'startTime',
+                  key: 'startTime',
+                  render: (v: string) => dayjs(v).format('YYYY-MM-DD HH:mm'),
+                },
+                {
+                  title: 'End',
+                  dataIndex: 'endTime',
+                  key: 'endTime',
+                  render: (v: string) => dayjs(v).format('YYYY-MM-DD HH:mm'),
+                },
+                {
+                  title: 'Status',
+                  key: 'status',
+                  render: (_: any, record: UserDelegationDto) => {
+                    const now = new Date();
+                    const start = new Date(record.startTime);
+                    const end = new Date(record.endTime);
+                    if (now < start) return <Tag color="blue">Upcoming</Tag>;
+                    if (now > end) return <Tag color="default">Expired</Tag>;
+                    return <Tag color="green">Active</Tag>;
+                  },
+                },
+                {
+                  title: '',
+                  key: 'actions',
+                  width: 80,
+                  render: (_: any, record: UserDelegationDto) => (
+                    <Button
+                      size="small"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDeleteDelegation(record.id)}
+                    />
+                  ),
+                },
+              ]}
+            />
+          ) : (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span style={{ color: 'var(--ce-text-muted)', fontSize: 13 }}>
+                  No delegations. User delegation allows another user to act on your behalf
+                  for a specified time period.
+                </span>
+              }
+            />
+          )}
+        </Card>
+      </div>
+
+      {/* Create Delegation Modal */}
+      <Modal
+        title="Create Delegation"
+        open={delegationModalOpen}
+        onCancel={() => { setDelegationModalOpen(false); delegationForm.resetFields(); setUserOptions([]); }}
+        onOk={handleCreateDelegation}
+        confirmLoading={delegationCreating}
+        okText="Create"
+        destroyOnClose
+      >
+        <Form form={delegationForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item
+            name="targetUserId"
+            label="Delegate To"
+            rules={[{ required: true, message: 'Please select a user' }]}
+          >
+            <Select
+              showSearch
+              placeholder="Search for a user..."
+              filterOption={false}
+              onSearch={searchUsers}
+              loading={userSearchLoading}
+              options={userOptions.map(u => ({ label: u.userName, value: u.id }))}
+              notFoundContent={userSearchLoading ? <Spin size="small" /> : null}
+            />
+          </Form.Item>
+          <Form.Item
+            name="dateRange"
+            label="Delegation Period"
+            rules={[{ required: true, message: 'Please select a date range' }]}
+          >
+            <DatePicker.RangePicker
+              showTime
+              style={{ width: '100%' }}
+              disabledDate={(current) => current && current < dayjs().startOf('day')}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

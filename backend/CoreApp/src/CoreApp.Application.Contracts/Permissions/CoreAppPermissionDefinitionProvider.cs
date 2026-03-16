@@ -25,6 +25,16 @@ public class CoreAppPermissionDefinitionProvider : PermissionDefinitionProvider
         workflowPermission.AddChild(CoreAppPermissions.Workflows.Create, L("Permission:Workflows.Create"));
         workflowPermission.AddChild(CoreAppPermissions.Workflows.Edit, L("Permission:Workflows.Edit"));
         workflowPermission.AddChild(CoreAppPermissions.Workflows.Delete, L("Permission:Workflows.Delete"));
+
+        var ouPermission = coreAppGroup.AddPermission(CoreAppPermissions.OrganizationUnits.Default, L("Permission:OrganizationUnits"));
+        ouPermission.AddChild(CoreAppPermissions.OrganizationUnits.ManageOU, L("Permission:OrganizationUnits.ManageOU"));
+        ouPermission.AddChild(CoreAppPermissions.OrganizationUnits.ManageMembers, L("Permission:OrganizationUnits.ManageMembers"));
+        ouPermission.AddChild(CoreAppPermissions.OrganizationUnits.ManageRoles, L("Permission:OrganizationUnits.ManageRoles"));
+
+        var claimTypePermission = coreAppGroup.AddPermission(CoreAppPermissions.ClaimTypes.Default, L("Permission:ClaimTypes"));
+        claimTypePermission.AddChild(CoreAppPermissions.ClaimTypes.Create, L("Permission:ClaimTypes.Create"));
+        claimTypePermission.AddChild(CoreAppPermissions.ClaimTypes.Edit, L("Permission:ClaimTypes.Edit"));
+        claimTypePermission.AddChild(CoreAppPermissions.ClaimTypes.Delete, L("Permission:ClaimTypes.Delete"));
     }
 
     private static LocalizableString L(string name)

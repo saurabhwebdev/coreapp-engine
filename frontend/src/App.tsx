@@ -11,6 +11,8 @@ import AdminLayout from './layouts/AdminLayout';
 import DashboardPage from './pages/dashboard';
 import UsersPage from './pages/identity/users';
 import RolesPage from './pages/identity/roles';
+import OrganizationUnitsPage from './pages/identity/organization-units';
+import ClaimTypesPage from './pages/identity/claim-types';
 import TenantsPage from './pages/tenants';
 import AuditLogsPage from './pages/audit-logs';
 import BackgroundJobsPage from './pages/background-jobs';
@@ -127,6 +129,8 @@ export default function App() {
                   <Route index element={<DashboardPage />} />
                   <Route path="identity/users" element={<UsersPage />} />
                   <Route path="identity/roles" element={<RolesPage />} />
+                  <Route path="identity/organization-units" element={<OrganizationUnitsPage />} />
+                  <Route path="identity/claim-types" element={<ClaimTypesPage />} />
                   <Route path="tenants" element={<TenantsPage />} />
                   <Route path="background-jobs" element={<BackgroundJobsPage />} />
                   <Route path="health" element={<HealthPage />} />
