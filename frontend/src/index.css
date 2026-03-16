@@ -9,18 +9,19 @@
   /* Surfaces — Apple-clean */
   --ce-bg: #FAFAFA;
   --ce-bg-card: #FFFFFF;
-  --ce-bg-sidebar: #1D1D1F;
-  --ce-bg-sidebar-hover: #2C2C2E;
-  --ce-bg-sidebar-active: rgba(194, 112, 62, 0.1);
+  --ce-bg-sidebar: #FFFFFF;
+  --ce-bg-sidebar-hover: #F5F5F7;
+  --ce-bg-sidebar-active: rgba(194, 112, 62, 0.08);
   --ce-bg-header: rgba(250, 250, 250, 0.92);
   --ce-bg-inset: #F5F5F7;
+  --ce-sidebar-border: #E8E8ED;
 
   /* Typography — Apple-exact */
   --ce-text: #1D1D1F;
   --ce-text-secondary: #86868B;
   --ce-text-muted: #AEAEB2;
-  --ce-text-sidebar: rgba(255,255,255,0.55);
-  --ce-text-sidebar-active: #FFFFFF;
+  --ce-text-sidebar: #6E6E73;
+  --ce-text-sidebar-active: #1D1D1F;
   --ce-text-inverse: #FFFFFF;
 
   /* Accent — warm copper, used surgically */
@@ -71,6 +72,7 @@
   --ce-bg-sidebar-active: rgba(194, 112, 62, 0.14);
   --ce-bg-header: rgba(30, 30, 30, 0.92);
   --ce-bg-inset: #252525;
+  --ce-sidebar-border: #2D2D2D;
 
   --ce-text: #F5F5F5;
   --ce-text-secondary: #B3B3B3;

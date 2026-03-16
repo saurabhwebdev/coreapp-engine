@@ -261,6 +261,7 @@ export default function AdminLayout() {
           width: sidebarWidth,
           minWidth: sidebarWidth,
           background: 'var(--ce-bg-sidebar)',
+          borderRight: '1px solid var(--ce-sidebar-border, var(--ce-border-light))',
           display: 'flex',
           flexDirection: 'column',
           transition: 'width 0.25s cubic-bezier(0.22, 1, 0.36, 1), min-width 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
@@ -278,7 +279,7 @@ export default function AdminLayout() {
             alignItems: 'center',
             padding: collapsed ? '0 16px' : '0 20px',
             justifyContent: collapsed ? 'center' : 'flex-start',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid var(--ce-sidebar-border, var(--ce-border-light))',
             flexShrink: 0,
           }}
         >
@@ -298,7 +299,7 @@ export default function AdminLayout() {
           )}
           {!collapsed && (
             <div style={{ marginLeft: 12, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-              <div style={{ fontWeight: 700, fontSize: 15, color: '#fff', letterSpacing: -0.3, lineHeight: 1.2 }}>{branding.appName}</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ce-text-sidebar-active)', letterSpacing: -0.3, lineHeight: 1.2 }}>{branding.appName}</div>
               <div style={{ fontSize: 10, color: 'var(--ce-text-sidebar)', letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 500 }}>{branding.tagline}</div>
             </div>
           )}
@@ -309,7 +310,7 @@ export default function AdminLayout() {
           {navSections.map((section) => (
             <div key={section.title} style={{ marginBottom: 8 }}>
               {!collapsed && (
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, color: 'rgba(139,145,168,0.5)', padding: '12px 12px 6px' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, color: 'var(--ce-text-muted)', padding: '12px 12px 6px' }}>
                   {section.title}
                 </div>
               )}
@@ -325,7 +326,7 @@ export default function AdminLayout() {
                       justifyContent: collapsed ? 'center' : 'flex-start',
                       gap: 10, border: 'none', borderRadius: 8, cursor: 'pointer',
                       background: active ? 'var(--ce-bg-sidebar-active)' : 'transparent',
-                      color: active ? '#fff' : 'var(--ce-text-sidebar)',
+                      color: active ? 'var(--ce-text-sidebar-active)' : 'var(--ce-text-sidebar)',
                       fontSize: 13, fontWeight: active ? 600 : 500, fontFamily: 'inherit',
                       transition: 'all 0.15s ease', position: 'relative', marginBottom: 2,
                     }}
@@ -355,7 +356,7 @@ export default function AdminLayout() {
         </nav>
 
         {/* Sidebar footer */}
-        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+        <div style={{ padding: '12px 8px', borderTop: '1px solid var(--ce-sidebar-border, var(--ce-border-light))', flexShrink: 0 }}>
           <button
             onClick={() => setCollapsed(!collapsed)}
             style={{
