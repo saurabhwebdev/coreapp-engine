@@ -32,5 +32,16 @@ export const getTimezoneSettings = () =>
 export const updateTimezoneSettings = (timezone: string) =>
   api.post('/api/setting-management/timezone', null, { params: { timezone } });
 
-export const getTimezones = () =>
-  api.get<NameValue[]>('/api/setting-management/timezone/timezones');
+export const getTimezones = (): Promise<{ data: NameValue[] }> => {
+  // Use browser's Intl API — ABP 8.x timezone endpoint crashes on Linux
+  const timezones: NameValue[] = Intl.supportedValuesOf('timeZone').map(tz => {
+    try {
+      const formatter = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName: 'longOffset' });
+      const offset = formatter.formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value || '';
+      return { name: `(${offset}) ${tz.replace(/_/g, ' ')}`, value: tz };
+    } catch {
+      return { name: tz, value: tz };
+    }
+  });
+  return Promise.resolve({ data: timezones });
+};
