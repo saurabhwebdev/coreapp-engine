@@ -174,13 +174,18 @@ export default function AdminLayout() {
 
   const loadTenants = async () => {
     try {
-      // Only load tenants if we're host admin (no tenant context)
+      // Always try loading tenants — temporarily clear __tenant header
+      // so the request goes to host context
       const savedTenant = localStorage.getItem('__tenant');
-      if (!savedTenant) {
-        const res = await api.get('/api/multi-tenancy/tenants', { params: { maxResultCount: 100 } });
-        setTenants(res.data?.items || []);
-      }
-    } catch { /* not authorized or not host — ignore */ }
+      if (savedTenant) localStorage.removeItem('__tenant');
+      const res = await api.get('/api/multi-tenancy/tenants', { params: { maxResultCount: 100 } });
+      if (savedTenant) localStorage.setItem('__tenant', savedTenant);
+      setTenants(res.data?.items || []);
+    } catch {
+      // Not authorized (tenant user) or error — ignore
+      const savedTenant = localStorage.getItem('__tenant');
+      if (savedTenant) localStorage.setItem('__tenant', savedTenant);
+    }
   };
 
   const switchTenant = (tenantId: string | null) => {
