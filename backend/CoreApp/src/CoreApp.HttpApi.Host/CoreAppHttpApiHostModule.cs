@@ -330,6 +330,8 @@ public class CoreAppHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
+        app.UseBlazorFrameworkFiles("/elsa-studio");
+        app.UseStaticFiles();
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
@@ -359,7 +361,6 @@ public class CoreAppHttpApiHostModule : AbpModule
         app.UseAbpSerilogEnrichers();
         app.UseWorkflowsApi();
         app.UseWorkflows();
-        app.UseBlazorFrameworkFiles("/elsa-studio");
         app.UseConfiguredEndpoints(endpoints =>
         {
             endpoints.MapHub<NotificationHub>("/signalr/notifications");
