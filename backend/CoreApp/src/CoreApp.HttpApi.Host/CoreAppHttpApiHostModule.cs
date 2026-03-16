@@ -297,6 +297,7 @@ public class CoreAppHttpApiHostModule : AbpModule
 
         app.UseUnitOfWork();
         app.UseDynamicClaims();
+        app.UseMiddleware<Middleware.TenantScopeMiddleware>();
         app.UseAuthorization();
 
         app.UseSwagger();

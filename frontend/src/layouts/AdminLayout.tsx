@@ -29,6 +29,7 @@ import {
 import { getUnreadCount } from '../services/notification';
 import { startConnection, onNotificationReceived } from '../services/signalr';
 import api from '../services/api';
+import { env } from '../utils/env';
 import { getAvatarConfig, generateAvatarDataUri } from '../utils/avatar';
 import { getBranding } from '../utils/branding';
 import { getColorTheme } from '../utils/theme';
@@ -174,17 +175,23 @@ export default function AdminLayout() {
 
   const loadTenants = async () => {
     try {
-      // Always try loading tenants — temporarily clear __tenant header
-      // so the request goes to host context
-      const savedTenant = localStorage.getItem('__tenant');
-      if (savedTenant) localStorage.removeItem('__tenant');
-      const res = await api.get('/api/multi-tenancy/tenants', { params: { maxResultCount: 100 } });
-      if (savedTenant) localStorage.setItem('__tenant', savedTenant);
-      setTenants(res.data?.items || []);
+      // Load tenants without __tenant header (host context)
+      // Use axios directly to avoid the __tenant interceptor
+      const storageKey = `oidc.user:${env.authAuthority}:${env.authClientId}`;
+      const userData = localStorage.getItem(storageKey);
+      let token = '';
+      if (userData) {
+        try { token = JSON.parse(userData).access_token || ''; } catch { /* */ }
+      }
+      const res = await fetch(`${env.apiBaseUrl}/api/multi-tenancy/tenants?maxResultCount=100`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTenants(data?.items || []);
+      }
     } catch {
       // Not authorized (tenant user) or error — ignore
-      const savedTenant = localStorage.getItem('__tenant');
-      if (savedTenant) localStorage.setItem('__tenant', savedTenant);
     }
   };
 
@@ -553,6 +560,33 @@ export default function AdminLayout() {
             </Dropdown>
           </Space>
         </header>
+
+        {/* Tenant context banner */}
+        {currentTenantId && (
+          <div style={{
+            padding: '8px 28px',
+            background: 'var(--ce-accent-light)',
+            borderBottom: '1px solid var(--ce-accent-border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            fontSize: 12, fontWeight: 500,
+          }}>
+            <span style={{ color: 'var(--ce-accent)' }}>
+              Viewing tenant: <strong>{tenants.find((t) => t.id === currentTenantId)?.name || 'Unknown'}</strong>
+              &nbsp;&mdash; All data on this page is scoped to this tenant.
+            </span>
+            <button
+              onClick={() => switchTenant(null)}
+              style={{
+                border: '1px solid var(--ce-accent-border)', borderRadius: 6,
+                background: 'var(--ce-bg-card)', cursor: 'pointer',
+                fontSize: 11, fontWeight: 600, color: 'var(--ce-accent)',
+                padding: '3px 10px', fontFamily: 'inherit',
+              }}
+            >
+              Back to Host
+            </button>
+          </div>
+        )}
 
         {/* Content */}
         <main style={{ padding: 28 }}>
