@@ -157,6 +157,7 @@ public class CoreAppHttpApiHostModule : AbpModule
                 identity.TokenOptions = options => options.SigningKey = "sufficiently-large-secret-signing-key-for-jwt-tokens-1234567890";
                 identity.UseAdminUserProvider();
             });
+            elsa.UseDefaultAuthentication();
             elsa.UseWorkflowsApi();
             elsa.UseHttp(http => http.ConfigureHttpOptions = options =>
             {
@@ -168,10 +169,17 @@ public class CoreAppHttpApiHostModule : AbpModule
             elsa.AddWorkflowsFrom<CoreAppHttpApiHostModule>();
         });
 
-        // Suppress Elsa multitenancy shutdown errors (non-critical NullRef in BookmarkQueueWorker.Stop)
+        // Suppress Elsa multitenancy shutdown errors
         context.Services.Configure<Microsoft.Extensions.Hosting.HostOptions>(options =>
         {
             options.BackgroundServiceExceptionBehavior = Microsoft.Extensions.Hosting.BackgroundServiceExceptionBehavior.Ignore;
+        });
+
+        // Reset default auth scheme to OpenIddict (Elsa's UseDefaultAuthentication overrides it)
+        context.Services.Configure<Microsoft.AspNetCore.Authentication.AuthenticationOptions>(options =>
+        {
+            options.DefaultAuthenticateScheme = global::OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = global::OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
         });
 
         Configure<AbpBlobStoringOptions>(options =>
