@@ -63,11 +63,13 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
     private async Task CreateApplicationsAsync()
     {
         var commonScopes = new List<string> {
+            "openid",
             "address",
             "email",
             "phone",
             "profile",
             "roles",
+            "offline_access",
             "CoreApp"
         };
 
