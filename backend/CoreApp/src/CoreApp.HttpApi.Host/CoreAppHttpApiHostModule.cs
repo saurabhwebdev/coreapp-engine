@@ -158,7 +158,6 @@ public class CoreAppHttpApiHostModule : AbpModule
                 identity.TokenOptions = options => options.SigningKey = "sufficiently-large-secret-signing-key-for-jwt-tokens-1234567890";
                 identity.UseAdminUserProvider();
             });
-            elsa.UseDefaultAuthentication();
             elsa.UseWorkflowsApi();
             elsa.UseHttp(http => http.ConfigureHttpOptions = options =>
             {
