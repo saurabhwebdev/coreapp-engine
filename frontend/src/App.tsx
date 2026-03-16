@@ -16,8 +16,6 @@ import AuditLogsPage from './pages/audit-logs';
 import BackgroundJobsPage from './pages/background-jobs';
 import NotificationsPage from './pages/notifications';
 import FilesPage from './pages/files';
-import WorkflowsPage from './pages/workflows';
-import WorkflowEditor from './pages/workflows/editor';
 import ChatPage from './pages/chat';
 import FormsPage from './pages/forms';
 import ReportsPage from './pages/reports';
@@ -134,8 +132,6 @@ export default function App() {
                   <Route path="health" element={<HealthPage />} />
                   <Route path="audit-logs" element={<AuditLogsPage />} />
                   <Route path="notifications" element={<NotificationsPage />} />
-                  <Route path="workflows" element={<WorkflowsPage />} />
-                  <Route path="workflows/:id" element={<WorkflowEditor />} />
                   <Route path="elsa-studio" element={<ElsaStudioPage />} />
                   <Route path="files" element={<FilesPage />} />
                   <Route path="chat" element={<ChatPage />} />
