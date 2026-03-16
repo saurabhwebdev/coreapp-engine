@@ -3,6 +3,7 @@
         <Project Path="src/CoreApp.Domain/CoreApp.Domain.csproj" />
         <Project Path="src/CoreApp.Application/CoreApp.Application.csproj" />
         <Project Path="src/CoreApp.ElsaServer/CoreApp.ElsaServer.csproj" />
+        <Project Path="src/CoreApp.ElsaStudio/CoreApp.ElsaStudio.csproj" />
         <Project Path="src/CoreApp.EntityFrameworkCore/CoreApp.EntityFrameworkCore.csproj" />
         <Project Path="src/CoreApp.Domain.Shared/CoreApp.Domain.Shared.csproj" />
         <Project Path="src/CoreApp.Application.Contracts/CoreApp.Application.Contracts.csproj" />

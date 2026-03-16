@@ -3,77 +3,74 @@ import { Button, Spin } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, ExportOutlined } from '@ant-design/icons';
 
 export default function ElsaStudioPage() {
-  const elsaUrl = 'http://localhost:14000';
-  const [status, setStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const engineUrl = 'http://localhost:14000';
+  const studioUrl = 'http://localhost:5014';
+  const [engineStatus, setEngineStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [studioStatus, setStudioStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
   useEffect(() => {
-    fetch(`${elsaUrl}/health`)
-      .then((r) => setStatus(r.ok ? 'online' : 'offline'))
-      .catch(() => setStatus('offline'));
+    fetch(`${engineUrl}/health`).then((r) => setEngineStatus(r.ok ? 'online' : 'offline')).catch(() => setEngineStatus('offline'));
+    fetch(studioUrl).then((r) => setStudioStatus(r.ok ? 'online' : 'offline')).catch(() => setStudioStatus('offline'));
   }, []);
+
+  const StatusDot = ({ status }: { status: string }) => (
+    status === 'checking' ? <Spin size="small" /> :
+    status === 'online' ? <CheckCircleFilled style={{ color: 'var(--ce-success)', fontSize: 16 }} /> :
+    <CloseCircleFilled style={{ color: 'var(--ce-danger)', fontSize: 16 }} />
+  );
 
   return (
     <div className="ce-page-enter" style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', height: 'calc(100vh - 160px)', gap: 16,
+      justifyContent: 'center', height: 'calc(100vh - 160px)', gap: 20,
     }}>
-      {status === 'checking' ? (
-        <Spin size="large" />
-      ) : status === 'online' ? (
-        <CheckCircleFilled style={{ fontSize: 40, color: 'var(--ce-success)' }} />
-      ) : (
-        <CloseCircleFilled style={{ fontSize: 40, color: 'var(--ce-danger)' }} />
-      )}
-
-      <div style={{ fontWeight: 700, fontSize: 20, color: 'var(--ce-text)' }}>
-        Elsa Workflow Engine
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--ce-text-muted)', textAlign: 'center', maxWidth: 420, lineHeight: 1.6 }}>
-        {status === 'online'
-          ? 'The workflow engine is running. Open Elsa Studio to design and manage workflows.'
-          : status === 'offline'
-            ? 'The workflow engine is not reachable. Make sure it\'s running on port 14000.'
-            : 'Checking connection...'}
+      <div style={{ fontWeight: 700, fontSize: 22, color: 'var(--ce-text)' }}>
+        Workflow Engine
       </div>
 
-      {status === 'online' && (
-        <Button
-          type="primary"
-          size="large"
-          icon={<ExportOutlined />}
-          onClick={() => window.open(elsaUrl, '_blank')}
-          style={{ marginTop: 8 }}
-        >
-          Open Elsa Studio
+      {/* Status cards */}
+      <div style={{ display: 'flex', gap: 16 }}>
+        <div style={{
+          padding: '16px 24px', borderRadius: 'var(--ce-radius)',
+          border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-card)',
+          display: 'flex', alignItems: 'center', gap: 10, minWidth: 200,
+        }}>
+          <StatusDot status={engineStatus} />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--ce-text)' }}>Elsa Engine</div>
+            <div className="ce-mono" style={{ fontSize: 11 }}>localhost:14000</div>
+          </div>
+        </div>
+        <div style={{
+          padding: '16px 24px', borderRadius: 'var(--ce-radius)',
+          border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-card)',
+          display: 'flex', alignItems: 'center', gap: 10, minWidth: 200,
+        }}>
+          <StatusDot status={studioStatus} />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--ce-text)' }}>Elsa Studio</div>
+            <div className="ce-mono" style={{ fontSize: 11 }}>localhost:5014</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 13, color: 'var(--ce-text-muted)', textAlign: 'center', maxWidth: 450, lineHeight: 1.6 }}>
+        {studioStatus === 'online'
+          ? 'Both services running. Click below to open the visual workflow designer.'
+          : engineStatus === 'online'
+            ? 'Engine running but Studio is not reachable. Start it with: npm run dev:studio'
+            : 'Services not running. Start all with: npm run dev'}
+      </div>
+
+      {studioStatus === 'online' && (
+        <Button type="primary" size="large" icon={<ExportOutlined />}
+          onClick={() => window.open(studioUrl, '_blank')} style={{ marginTop: 4 }}>
+          Open Workflow Designer
         </Button>
       )}
 
-      <div style={{
-        marginTop: 24, padding: 16, borderRadius: 'var(--ce-radius)',
-        background: 'var(--ce-bg-inset)', border: '1px solid var(--ce-border-light)',
-        maxWidth: 500, width: '100%',
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--ce-text-muted)', marginBottom: 10 }}>
-          Connection Details
-        </div>
-        <div className="ce-settings-group" style={{ marginBottom: 0 }}>
-          <div className="ce-settings-row">
-            <span className="ce-settings-row-label">Server URL</span>
-            <span className="ce-mono">{elsaUrl}</span>
-          </div>
-          <div className="ce-settings-row">
-            <span className="ce-settings-row-label">Login</span>
-            <span className="ce-mono">admin / password</span>
-          </div>
-          <div className="ce-settings-row">
-            <span className="ce-settings-row-label">Database</span>
-            <span className="ce-mono">Same as CoreApp (Elsa schema)</span>
-          </div>
-          <div className="ce-settings-row">
-            <span className="ce-settings-row-label">Activities</span>
-            <span className="ce-mono">48 built-in</span>
-          </div>
-        </div>
+      <div style={{ fontSize: 11, color: 'var(--ce-text-muted)' }}>
+        Login: admin / password
       </div>
     </div>
   );
