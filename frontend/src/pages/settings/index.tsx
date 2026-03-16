@@ -51,6 +51,42 @@ import EmptyState from '../../components/EmptyState';
 import { colorThemes, getColorTheme, saveColorTheme, saveCustomColor, getCustomColor, getLikedColors, saveLikedColor, removeLikedColor, type LikedColor } from '../../utils/theme';
 import { getBranding, saveBranding, resetBranding } from '../../utils/branding';
 
+/* ─── Tenant Context Helper ─── */
+function getTenantId(): string | null {
+  return localStorage.getItem('__tenant');
+}
+
+function ScopeBadge({ scope }: { scope: 'global' | 'tenant' }) {
+  const isGlobal = scope === 'global';
+  return (
+    <span style={{
+      fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8,
+      padding: '2px 6px', borderRadius: 4,
+      background: isGlobal ? 'var(--ce-info-light)' : 'var(--ce-success-light)',
+      color: isGlobal ? 'var(--ce-info)' : 'var(--ce-success)',
+    }}>
+      {isGlobal ? 'Global' : 'Tenant'}
+    </span>
+  );
+}
+
+function HostOnlyNotice() {
+  return (
+    <div style={{
+      padding: 20, borderRadius: 'var(--ce-radius)',
+      background: 'var(--ce-bg-inset)', border: '1px solid var(--ce-border-light)',
+      textAlign: 'center',
+    }}>
+      <LockOutlined style={{ fontSize: 24, color: 'var(--ce-text-muted)', marginBottom: 8, display: 'block' }} />
+      <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--ce-text)', marginBottom: 4 }}>Host-Only Setting</div>
+      <div style={{ fontSize: 12, color: 'var(--ce-text-muted)', lineHeight: 1.5 }}>
+        This setting can only be configured from the Host context.<br />
+        Switch back to Host to manage this setting.
+      </div>
+    </div>
+  );
+}
+
 /* ─── Appearance Tab ─── */
 function AppearanceTab() {
   const [activeTheme, setActiveTheme] = useState(getColorTheme().key);
@@ -464,6 +500,7 @@ function BrandingTab() {
 
 /* ─── Email Tab ─── */
 function EmailTab() {
+  const tenantId = getTenantId();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -472,12 +509,17 @@ function EmailTab() {
   const [sendingTest, setSendingTest] = useState(false);
 
   useEffect(() => {
+    if (tenantId) return; // Don't load in tenant context
     setLoading(true);
     getEmailSettings()
       .then((res) => form.setFieldsValue(res.data))
       .catch(() => message.error('Failed to load email settings'))
       .finally(() => setLoading(false));
-  }, [form]);
+  }, [form, tenantId]);
+
+  if (tenantId) {
+    return <HostOnlyNotice />;
+  }
 
   const handleSave = async () => {
     try {
@@ -680,6 +722,7 @@ function TimezoneTab() {
 
 /* ─── Modules (Features) Tab ─── */
 function ModulesTab() {
+  const tenantId = getTenantId();
   const [groups, setGroups] = useState<FeatureGroupDto[]>([]);
   const [featureValues, setFeatureValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -688,7 +731,8 @@ function ModulesTab() {
 
   const loadFeatures = () => {
     setLoading(true);
-    getFeatures('T', '')
+    // When in tenant context, use tenant ID as providerKey
+    getFeatures('T', tenantId || '')
       .then((res) => {
         setGroups(res.data.groups);
         const values: Record<string, string> = {};
@@ -709,7 +753,7 @@ function ModulesTab() {
     setFeatureValues((prev) => ({ ...prev, [name]: newValue }));
     try {
       const allFeatures = Object.entries({ ...featureValues, [name]: newValue }).map(([n, v]) => ({ name: n, value: v }));
-      await updateFeatures('T', '', allFeatures);
+      await updateFeatures('T', tenantId || '', allFeatures);
       message.success(`${checked ? 'Enabled' : 'Disabled'} successfully`);
       loadFeatures();
       window.dispatchEvent(new CustomEvent('features-changed'));
@@ -933,41 +977,52 @@ function ModulesTab() {
 
 /* ─── Settings Page ─── */
 export default function SettingsPage() {
+  const tenantId = getTenantId();
+
   return (
     <div className="ce-page-enter">
+      {tenantId && (
+        <div style={{
+          fontSize: 12, color: 'var(--ce-text-muted)', marginBottom: 16,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <LockOutlined style={{ fontSize: 11 }} />
+          Some settings are host-only and cannot be changed in tenant context.
+        </div>
+      )}
       <Tabs
-        defaultActiveKey="appearance"
+        defaultActiveKey={tenantId ? 'modules' : 'appearance'}
         tabPosition="left"
         style={{ minHeight: 400 }}
         tabBarStyle={{
-          width: 180,
+          width: 200,
           borderRight: '1px solid var(--ce-border-light)',
           paddingRight: 0,
         }}
         items={[
           {
             key: 'appearance',
-            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BgColorsOutlined /> Appearance</span>,
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><BgColorsOutlined /> Appearance <ScopeBadge scope="global" /></span>,
             children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><AppearanceTab /></div>,
           },
           {
             key: 'branding',
-            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><EditOutlined /> Branding</span>,
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><EditOutlined /> Branding <ScopeBadge scope="global" /></span>,
             children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><BrandingTab /></div>,
           },
           {
             key: 'email',
-            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><MailOutlined /> Email</span>,
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MailOutlined /> Email <ScopeBadge scope="global" /></span>,
             children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><EmailTab /></div>,
           },
           {
             key: 'timezone',
-            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ClockCircleOutlined /> Timezone</span>,
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ClockCircleOutlined /> Timezone <ScopeBadge scope="tenant" /></span>,
             children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><TimezoneTab /></div>,
           },
           {
             key: 'modules',
-            label: <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><AppstoreOutlined /> Modules</span>,
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><AppstoreOutlined /> Modules <ScopeBadge scope="tenant" /></span>,
             children: <div style={{ paddingLeft: 20, paddingRight: 8 }}><ModulesTab /></div>,
           },
         ]}
