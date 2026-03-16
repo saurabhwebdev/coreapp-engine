@@ -330,7 +330,7 @@ public class CoreAppHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
-        app.UseBlazorFrameworkFiles("/elsa-studio");
+        app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
