@@ -1,9 +1,7 @@
-﻿using System;
-using System.Net.Http;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
@@ -23,21 +21,6 @@ public class Program
         {
             Log.Information("Starting CoreApp.HttpApi.Host.");
             var builder = WebApplication.CreateBuilder(args);
-
-            // Trust dev HTTPS certificate for internal API calls (OpenIddict discovery, etc.)
-            if (builder.Environment.IsDevelopment())
-            {
-                builder.Services.ConfigureAll<HttpClientFactoryOptions>(options =>
-                {
-                    options.HttpMessageHandlerBuilderActions.Add(b =>
-                    {
-                        b.PrimaryHandler = new HttpClientHandler
-                        {
-                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                        };
-                    });
-                });
-            }
             builder.Host
                 .AddAppSettingsSecretsJson()
                 .UseAutofac()
