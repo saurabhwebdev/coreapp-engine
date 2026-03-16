@@ -1,39 +1,46 @@
 import { useEffect } from 'react';
 
 export default function ElsaStudioPage() {
-  const studioUrl = `https://${window.location.hostname}:44305/elsa-studio/`;
+  const studioUrl = 'http://localhost:5014';
 
   useEffect(() => {
-    // Redirect to Elsa Studio in the same tab
-    window.location.href = studioUrl;
+    window.open(studioUrl, '_blank');
   }, []);
 
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      height: 'calc(100vh - 130px)', flexDirection: 'column', gap: 12,
+      height: 'calc(100vh - 130px)', flexDirection: 'column', gap: 16,
     }}>
       <div style={{
         width: 48, height: 48, borderRadius: 12,
         background: 'linear-gradient(135deg, var(--ce-accent), var(--ce-accent-hover))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#fff', fontWeight: 800, fontSize: 16,
-        animation: 'ce-load-pulse 1.5s ease-in-out infinite',
       }}>
         CE
       </div>
-      <div style={{ color: 'var(--ce-text-muted)', fontSize: 14 }}>
-        Opening Elsa Workflow Designer...
+      <div style={{ fontWeight: 600, fontSize: 16, color: 'var(--ce-text)' }}>
+        Elsa Workflow Designer
       </div>
-      <a href={studioUrl} style={{ fontSize: 12, color: 'var(--ce-accent)' }}>
-        Click here if not redirected
+      <div style={{ fontSize: 13, color: 'var(--ce-text-muted)', textAlign: 'center', maxWidth: 400, lineHeight: 1.6 }}>
+        The workflow designer opens in a new tab. If it didn't open automatically, click below.
+      </div>
+      <a
+        href={studioUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          padding: '10px 24px', borderRadius: 8,
+          background: 'var(--ce-accent)', color: '#fff',
+          textDecoration: 'none', fontWeight: 600, fontSize: 14,
+        }}
+      >
+        Open Workflow Designer
       </a>
-      <style>{`
-        @keyframes ce-load-pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.08); opacity: 0.7; }
-        }
-      `}</style>
+      <div style={{ fontSize: 11, color: 'var(--ce-text-muted)', marginTop: 8 }}>
+        Login: admin / password
+      </div>
     </div>
   );
 }

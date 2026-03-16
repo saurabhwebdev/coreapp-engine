@@ -1,5 +1,3 @@
-using System.Text.Json;
-using Elsa.Studio.Contracts;
 using Elsa.Studio.Core.BlazorWasm.Extensions;
 using Elsa.Studio.Dashboard.Extensions;
 using Elsa.Studio.Extensions;
@@ -14,7 +12,6 @@ using Elsa.Studio.Workflows.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.JSInterop;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -34,16 +31,11 @@ builder.Services
 
 builder.Services.AddDashboardModule();
 builder.Services.AddWorkflowsModule();
-builder.Services.UseElsaIdentity();
 
 var app = builder.Build();
 
-var js = app.Services.GetRequiredService<IJSRuntime>();
-var clientConfig = await js.InvokeAsync<JsonElement>("getClientConfig");
-var apiUrl = clientConfig.GetProperty("apiUrl").GetString() ?? throw new InvalidOperationException("No API URL configured.");
-app.Services.GetRequiredService<IOptions<BackendOptions>>().Value.Url = new(apiUrl);
-
-var startupTaskRunner = app.Services.GetRequiredService<IStartupTaskRunner>();
-await startupTaskRunner.RunStartupTasksAsync();
+// Configure the backend URL from appsettings.json
+var backendUrl = builder.Configuration.GetValue<string>("Backend:Url") ?? "https://localhost:44305/elsa/api";
+app.Services.GetRequiredService<IOptions<BackendOptions>>().Value.Url = new Uri(backendUrl);
 
 await app.RunAsync();

@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "concurrently -n backend,frontend,studio -c blue,green,magenta \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:studio\"",
     "dev:backend": "cd backend/CoreApp/src/CoreApp.HttpApi.Host && dotnet run",
     "dev:frontend": "cd frontend && npm run dev",
+    "dev:studio": "cd backend/CoreApp/src/CoreApp.ElsaStudio && dotnet run --urls http://localhost:5014",
     "build:backend": "cd backend/CoreApp && dotnet build",
     "build:frontend": "cd frontend && npm run build",
     "build": "npm run build:backend && npm run build:frontend",

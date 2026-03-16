@@ -131,7 +131,6 @@ public class CoreAppHttpApiHostModule : AbpModule
         ConfigureCors(context, configuration);
 
         context.Services.AddSignalR();
-        context.Services.AddRazorPages();
 
         // ─── Elsa Workflows Engine ───
         var elsaConnectionString = configuration.GetConnectionString("Default")!;
@@ -330,8 +329,6 @@ public class CoreAppHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
-        app.UseBlazorFrameworkFiles();
-        app.UseStaticFiles();
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
@@ -364,7 +361,6 @@ public class CoreAppHttpApiHostModule : AbpModule
         app.UseConfiguredEndpoints(endpoints =>
         {
             endpoints.MapHub<NotificationHub>("/signalr/notifications");
-            endpoints.MapFallbackToPage("/elsa-studio/{**path}", "/ElsaStudio");
         });
     }
 }
