@@ -42,10 +42,6 @@ using Volo.Abp.Security.Claims;
 using CoreApp.Hubs;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
-using Elsa.EntityFrameworkCore.Extensions;
-using Elsa.EntityFrameworkCore.Modules.Management;
-using Elsa.EntityFrameworkCore.Modules.Runtime;
-using Elsa.Extensions;
 
 namespace CoreApp;
 
@@ -132,55 +128,7 @@ public class CoreAppHttpApiHostModule : AbpModule
 
         context.Services.AddSignalR();
 
-        // ─── Elsa Workflows Engine ───
-        var elsaConnectionString = configuration.GetConnectionString("Default")!;
-        context.Services.AddElsa(elsa =>
-        {
-            elsa.UseWorkflowManagement(management =>
-            {
-                management.UseEntityFrameworkCore(ef =>
-                {
-                    ef.UseSqlServer(elsaConnectionString);
-                    ef.RunMigrations = true;
-                });
-            });
-            elsa.UseWorkflowRuntime(runtime =>
-            {
-                runtime.UseEntityFrameworkCore(ef =>
-                {
-                    ef.UseSqlServer(elsaConnectionString);
-                    ef.RunMigrations = true;
-                });
-            });
-            elsa.UseIdentity(identity =>
-            {
-                identity.TokenOptions = options => options.SigningKey = "sufficiently-large-secret-signing-key-for-jwt-tokens-1234567890";
-                identity.UseAdminUserProvider();
-            });
-            elsa.UseDefaultAuthentication();
-            elsa.UseWorkflowsApi();
-            elsa.UseHttp(http => http.ConfigureHttpOptions = options =>
-            {
-                options.BaseUrl = new Uri(configuration["App:SelfUrl"] ?? "https://localhost:44305");
-                options.BasePath = "/elsa/api/workflows";
-            });
-            elsa.UseScheduling();
-            elsa.AddActivitiesFrom<CoreAppHttpApiHostModule>();
-            elsa.AddWorkflowsFrom<CoreAppHttpApiHostModule>();
-        });
 
-        // Suppress Elsa multitenancy shutdown errors
-        context.Services.Configure<Microsoft.Extensions.Hosting.HostOptions>(options =>
-        {
-            options.BackgroundServiceExceptionBehavior = Microsoft.Extensions.Hosting.BackgroundServiceExceptionBehavior.Ignore;
-        });
-
-        // Reset default auth scheme to OpenIddict (Elsa's UseDefaultAuthentication overrides it)
-        context.Services.Configure<Microsoft.AspNetCore.Authentication.AuthenticationOptions>(options =>
-        {
-            options.DefaultAuthenticateScheme = global::OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = global::OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-        });
 
         Configure<AbpBlobStoringOptions>(options =>
         {
@@ -364,8 +312,6 @@ public class CoreAppHttpApiHostModule : AbpModule
         });
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
-        app.UseWorkflowsApi();
-        app.UseWorkflows();
         app.UseConfiguredEndpoints(endpoints =>
         {
             endpoints.MapHub<NotificationHub>("/signalr/notifications");

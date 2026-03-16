@@ -32,11 +32,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      '/elsa': {
-        target: 'https://localhost:44305',
-        changeOrigin: true,
-        secure: false,
-      },
     },
   },
 })
