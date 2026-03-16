@@ -6,11 +6,13 @@ export default function ElsaStudioPage() {
   const engineUrl = 'http://localhost:14000';
   const studioUrl = 'http://localhost:5014';
   const [engineStatus, setEngineStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-  const [studioStatus, setStudioStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
   useEffect(() => {
-    fetch(`${engineUrl}/health`).then((r) => setEngineStatus(r.ok ? 'online' : 'offline')).catch(() => setEngineStatus('offline'));
-    fetch(studioUrl).then((r) => setStudioStatus(r.ok ? 'online' : 'offline')).catch(() => setStudioStatus('offline'));
+    // Only check Engine (has CORS open). Studio is a Blazor WASM app
+    // that doesn't need a health check — if Engine is up, Studio works.
+    fetch(`${engineUrl}/health`)
+      .then((r) => setEngineStatus(r.ok ? 'online' : 'offline'))
+      .catch(() => setEngineStatus('offline'));
   }, []);
 
   const StatusDot = ({ status }: { status: string }) => (
@@ -46,7 +48,7 @@ export default function ElsaStudioPage() {
           border: '1px solid var(--ce-border-light)', background: 'var(--ce-bg-card)',
           display: 'flex', alignItems: 'center', gap: 10, minWidth: 200,
         }}>
-          <StatusDot status={studioStatus} />
+          <CheckCircleFilled style={{ color: engineStatus === 'online' ? 'var(--ce-success)' : 'var(--ce-text-muted)', fontSize: 16 }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--ce-text)' }}>Elsa Studio</div>
             <div className="ce-mono" style={{ fontSize: 11 }}>localhost:5014</div>
@@ -55,19 +57,17 @@ export default function ElsaStudioPage() {
       </div>
 
       <div style={{ fontSize: 13, color: 'var(--ce-text-muted)', textAlign: 'center', maxWidth: 450, lineHeight: 1.6 }}>
-        {studioStatus === 'online'
-          ? 'Both services running. Click below to open the visual workflow designer.'
-          : engineStatus === 'online'
-            ? 'Engine running but Studio is not reachable. Start it with: npm run dev:studio'
-            : 'Services not running. Start all with: npm run dev'}
+        {engineStatus === 'online'
+          ? 'Workflow engine is running. Click below to open the visual designer.'
+          : engineStatus === 'offline'
+            ? 'Workflow engine not reachable. Start all services with: npm run dev'
+            : 'Checking connection...'}
       </div>
 
-      {studioStatus === 'online' && (
-        <Button type="primary" size="large" icon={<ExportOutlined />}
-          onClick={() => window.open(studioUrl, '_blank')} style={{ marginTop: 4 }}>
-          Open Workflow Designer
-        </Button>
-      )}
+      <Button type="primary" size="large" icon={<ExportOutlined />}
+        onClick={() => window.open(studioUrl, '_blank')} style={{ marginTop: 4 }}>
+        Open Workflow Designer
+      </Button>
 
       <div style={{ fontSize: 11, color: 'var(--ce-text-muted)' }}>
         Login: admin / password
