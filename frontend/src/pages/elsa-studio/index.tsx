@@ -1,33 +1,39 @@
-import { ExportOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
 
 export default function ElsaStudioPage() {
-  const studioUrl = `${window.location.protocol}//${window.location.hostname}:44305/elsa-studio`;
+  const studioUrl = `https://${window.location.hostname}:44305/elsa-studio/`;
+
+  useEffect(() => {
+    // Redirect to Elsa Studio in the same tab
+    window.location.href = studioUrl;
+  }, []);
 
   return (
-    <div className="ce-page-enter" style={{ height: 'calc(100vh - 130px)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      height: 'calc(100vh - 130px)', flexDirection: 'column', gap: 12,
+    }}>
       <div style={{
-        display: 'flex', justifyContent: 'flex-end', marginBottom: 8,
+        width: 48, height: 48, borderRadius: 12,
+        background: 'linear-gradient(135deg, var(--ce-accent), var(--ce-accent-hover))',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontWeight: 800, fontSize: 16,
+        animation: 'ce-load-pulse 1.5s ease-in-out infinite',
       }}>
-        <a
-          href={studioUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 12, color: 'var(--ce-accent)', fontWeight: 500,
-          }}
-        >
-          Open in new tab <ExportOutlined style={{ fontSize: 11 }} />
-        </a>
+        CE
       </div>
-      <iframe
-        src={studioUrl}
-        style={{
-          flex: 1, width: '100%', border: '1px solid var(--ce-border-light)',
-          borderRadius: 'var(--ce-radius)', background: 'var(--ce-bg-card)',
-        }}
-        title="Elsa Workflow Designer"
-      />
+      <div style={{ color: 'var(--ce-text-muted)', fontSize: 14 }}>
+        Opening Elsa Workflow Designer...
+      </div>
+      <a href={studioUrl} style={{ fontSize: 12, color: 'var(--ce-accent)' }}>
+        Click here if not redirected
+      </a>
+      <style>{`
+        @keyframes ce-load-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.08); opacity: 0.7; }
+        }
+      `}</style>
     </div>
   );
 }
